@@ -1,92 +1,112 @@
-# 🚀 Zaraz-Server — REST API Backend
+# 🚀 Zaraz-Server — REST API & Authentication Engine
 
 [![Node.js](https://img.shields.io/badge/Node.js-20+-green?logo=node.js)](https://nodejs.org/)
 [![Express.js](https://img.shields.io/badge/Express-4.21-lightgrey?logo=express)](https://expressjs.com/)
 [![MongoDB Atlas](https://img.shields.io/badge/MongoDB-Atlas-47A248?logo=mongodb)](https://www.mongodb.com/)
 [![Mongoose](https://img.shields.io/badge/Mongoose-8.10-red?logo=mongoose)](https://mongoosejs.com/)
-[![JWT Auth](https://img.shields.io/badge/Auth-JWT%20Bearer-black?logo=jsonwebtokens)](https://jwt.io/)
+[![JWT Auth](https://img.shields.io/badge/Auth-JWT%2030D-black?logo=jsonwebtokens)](https://jwt.io/)
+[![Theme](https://img.shields.io/badge/Theme-Permanent%20Green%20%26%20Black-10b981)](#)
 
-> **zaraz-server** is the standalone Express.js + MongoDB REST API backend for the **Zaraz.app** (Daraz-inspired) e-commerce platform. It provides endpoints for catalog management, categories, banners, orders, delivery logistics, multi-channel payment processing, and user authentication.
+> **zaraz-server** is the standalone Express.js + MongoDB REST API backend for the **Zaraz.app** (Daraz-inspired) e-commerce platform. It features an integrated **Green & Black HTML Dashboard** for browser visitors, live real-time API request testing, and an isolated **dual-database architecture** (`zaraz_auth_db` for credentials and user profiles; `zaraz_db` for products, orders, categories, and promotional banners).
 
 ---
 
-## 🛠️ Architecture & Technology Stack
+## 🎨 Green & Black Server Dashboard (`GET /`)
 
-- **Framework:** Express.js 4 (ES Modules `import/export`)
-- **Database & ODM:** MongoDB Atlas with Mongoose 8
-- **Authentication:** JSON Web Tokens (JWT) & bcryptjs password hashing
-- **Security & Cross-Origin:** CORS enabled for localhost:3000 and production frontend
-- **Serverless Ready:** Pre-configured `vercel.json` for zero-configuration serverless deployment
+When opening `http://localhost:5000` in any web browser, the server returns an interactive **Green & Black styled dashboard** featuring:
+- **Live System Metrics:** Real-time counts of products, categories, registered users, orders, and banners.
+- **Dual-Database Architecture Indicator:** `zaraz_auth_db` (Auth) & `zaraz_db` (Catalog & Logistics).
+- **Built-in Live API Console:** Test any endpoint (`/health`, `/products`, `/categories`, `/banners`, `/auth/stats`, `/orders`) directly in the browser with 1 click.
+- **Complete REST API Directory:** Detailed matrix of HTTP methods, paths, JWT Bearer requirements, and descriptions.
+- **JSON API Fallback:** When queried with `Accept: application/json` or `?format=json`, returns structured machine-readable JSON.
+
+---
+
+## 🔒 Dual-Database Architecture on MongoDB Atlas
+
+To maintain optimal isolation and security:
+1. **`zaraz_auth_db` (Authentication Database):**
+   - User collection: names, emails, bcrypt-hashed passwords, avatars, phone numbers, delivery addresses, and user roles (`customer`, `seller`, `admin`).
+   - Strict password security validation: minimum 6 characters, at least 1 uppercase letter (`[A-Z]`), and at least 1 lowercase letter (`[a-z]`).
+2. **`zaraz_db` (Store Catalog & Logistics Database):**
+   - Products (inventory, ratings, flash deals, specifications, seller details).
+   - Categories (departments with images and slugs).
+   - Banners (Daraz-style hero promotions).
+   - Orders & Fulfillment (customer delivery details, ordered items, courier tracking timeline, payment transaction IDs).
 
 ---
 
 ## 📋 Complete API Endpoints Reference
 
-### 1. Products (`/products`)
-| Method | Endpoint | Description |
-|:---|:---|:---|
-| `GET` | `/products` | Get products list (Supports `?category=`, `?search=`, `?flashSale=true`, `?sort=`, `?brand=`, `?minPrice=`, `?maxPrice=`, `?page=`, `?limit=`) |
-| `GET` | `/products/:id` | Get single product by Mongo ID or URL slug |
-| `POST` | `/products` | Create new product |
-| `PUT` | `/products/:id` | Update product information or inventory |
-| `DELETE` | `/products/:id` | Delete product from database |
+### 1. Authentication & Security (`/auth` & `/jwt`)
+| Method | Endpoint | Access | Database & Description |
+|:---|:---|:---|:---|
+| `POST` | `/auth/register` | Public | Register new customer or seller with password policy in **zaraz_auth_db** |
+| `POST` | `/auth/login` | Public | Verify bcrypt password against **zaraz_auth_db** and issue 30-day JWT |
+| `POST` | `/auth/social` | Public | Sync Google & GitHub OAuth profiles in **zaraz_auth_db** |
+| `POST` | `/jwt` or `/auth/jwt` | Public | Direct token issuance endpoint for active user session payload |
+| `GET` | `/auth/me` | Bearer JWT | Retrieve current authenticated user profile from **zaraz_auth_db** |
+| `GET` | `/auth/profile` | Bearer JWT | Fetch user profile details |
+| `PUT` | `/auth/profile` | Bearer JWT | Update user name, phone, shipping address and avatar in **zaraz_auth_db** |
+| `GET` | `/auth/stats` | Public | Breakdown of registered users, customers, sellers, and admins |
+| `GET` | `/auth/users` | Admin JWT | List all registered user records (Admin only) |
 
-### 2. Categories (`/categories`)
-| Method | Endpoint | Description |
-|:---|:---|:---|
-| `GET` | `/categories` | Get all department categories |
-| `GET` | `/categories/:slug` | Get single category by slug |
-| `POST` | `/categories` | Add a new department |
+### 2. Products Catalog (`/products`)
+| Method | Endpoint | Access | Description |
+|:---|:---|:---|:---|
+| `GET` | `/products` | Public | Filterable catalog (`?category=`, `?search=`, `?flashSale=true`, `?sort=`, `?brand=`, `?minPrice=`, `?maxPrice=`, `?page=`, `?limit=`) |
+| `GET` | `/products/:id` | Public | Fetch product by MongoDB ObjectId or URL slug |
+| `POST` | `/products` | Seller/Admin | Add new product with specifications and pricing |
+| `PUT` | `/products/:id` | Seller/Admin | Update product attributes or stock |
+| `DELETE` | `/products/:id` | Admin | Remove product from inventory |
 
-### 3. Promotional Banners (`/banners`)
-| Method | Endpoint | Description |
-|:---|:---|:---|
-| `GET` | `/banners` | Get active carousel and promotional banners |
-| `POST` | `/banners` | Create a new promotion banner |
+### 3. Categories & Banners (`/categories`, `/banners`)
+| Method | Endpoint | Access | Description |
+|:---|:---|:---|:---|
+| `GET` | `/categories` | Public | All department categories with images and count |
+| `GET` | `/categories/:slug` | Public | Get single category by slug |
+| `POST` | `/categories` | Admin | Create new category |
+| `GET` | `/banners` | Public | Get promotional banners for homepage carousel |
+| `POST` | `/banners` | Admin | Create promotion banner |
 
-### 4. Orders & Delivery (`/orders`)
-| Method | Endpoint | Description |
-|:---|:---|:---|
-| `POST` | `/orders` | Place new customer order with delivery address & payment |
-| `GET` | `/orders` | List customer orders (Filterable by `?email=`) |
-| `GET` | `/orders/:id` | Get order tracking details, delivery status & timeline |
-| `PATCH` | `/orders/:id/status` | Update order state (Processing, Shipped, Delivered) |
+### 4. Orders & Delivery Logistics (`/orders`)
+| Method | Endpoint | Access | Description |
+|:---|:---|:---|:---|
+| `POST` | `/orders` | Public | Place order with cart items, delivery method, and payment choice |
+| `GET` | `/orders` | Public / Query | Get orders (Filterable by `?email=user@zaraz.com`) |
+| `GET` | `/orders/:id` | Public | Live courier tracking timeline: Placed &rarr; Processing &rarr; Transit &rarr; Delivered |
+| `PATCH` | `/orders/:id/status`| Admin | Update order state and tracking milestones |
 
-### 5. Payment Gateway (`/payment`)
-| Method | Endpoint | Description |
-|:---|:---|:---|
-| `POST` | `/payment/process` | Simulate bKash, Nagad, Rocket, Card, or COD transaction |
+### 5. Multi-Channel Payment Processing (`/payment`)
+| Method | Endpoint | Access | Description |
+|:---|:---|:---|:---|
+| `POST` | `/payment/process` | Public | Authorize transaction for bKash, Nagad, Rocket, Credit/Debit Card or COD |
 
-### 6. Authentication (`/auth`)
-| Method | Endpoint | Description |
-|:---|:---|:---|
-| `POST` | `/auth/register` | Register customer with email, phone, address, and password |
-| `POST` | `/auth/login` | Sign in with email & password (Returns JWT Token) |
-| `GET` | `/auth/profile` | Get authenticated user info (`Authorization: Bearer <token>`) |
-| `PUT` | `/auth/profile` | Update profile information |
-
-### 7. Database Seeding (`/seed`)
-| Method | Endpoint | Description |
-|:---|:---|:---|
-| `GET` / `POST` | `/seed` | Reset & seed MongoDB with initial Daraz sample data |
+### 6. System Diagnostics & Seeding (`/health`, `/seed`)
+| Method | Endpoint | Access | Description |
+|:---|:---|:---|:---|
+| `GET` | `/health` | Public | Server uptime, memory consumption, Node.js version, and database statuses |
+| `GET` / `POST` | `/seed` | Public | Seed default Daraz-inspired catalog and demo accounts into MongoDB Atlas |
 
 ---
 
-## 🏃 Getting Started
+## 🏃 Quick Start
 
-### 1. Configure Environment (`.env`):
-Edit `D:\Project\zaraz-server\.env`:
+### 1. Environment Configuration (`.env`)
 ```env
 PORT=5000
-MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
+MONGODB_URI=mongodb+srv://zaraz-admin:6681CptbyrN76kua@cluster0.qlpxs02.mongodb.net/zaraz_db?retryWrites=true&w=majority
+AUTH_DB_NAME=zaraz_auth_db
+AUTH_MONGODB_URI=mongodb+srv://zaraz-admin:6681CptbyrN76kua@cluster0.qlpxs02.mongodb.net/zaraz_auth_db?retryWrites=true&w=majority
+JWT_SECRET=EQIm8GWsjGHQY0jf0Ixf7Djjh6CRxFCZ
 CLIENT_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:3000
 ```
 
-### 2. Run the Development Server:
+### 2. Start the Server
 ```bash
 cd D:\Project\zaraz-server
 npm run dev
 ```
-The server will start at: **http://localhost:5000**
-Health check endpoint: **http://localhost:5000/health**
+
+Visit the dashboard in your browser: **http://localhost:5000**

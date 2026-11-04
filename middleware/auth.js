@@ -12,22 +12,37 @@ export const verifyToken = async (req, res, next) => {
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'Access Denied: No authentication token provided',
+      message: 'Access Denied: No authentication token provided. Please log in.',
     });
   }
 
   try {
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || 'zaraz_super_secret_jwt_key_2026_green_black'
-    );
-    const user = await User.findById(decoded.id).select('-password');
+    const secret =
+      process.env.JWT_SECRET || 'zaraz_super_secret_jwt_key_2026_green_black';
+    const decoded = jwt.verify(token, secret);
+
+    const userId = decoded.id || decoded._id;
+    let user = null;
+
+    if (userId) {
+      user = await User.findById(userId).select('-password');
+    }
+
+    if (!user && decoded.email) {
+      user = await User.findOne({ email: decoded.email.toLowerCase() }).select('-password');
+    }
 
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid session: User account no longer exists',
-      });
+      // If user record is not found in DB but token is valid (e.g. social session), supply decoded payload
+      req.user = {
+        _id: decoded.id,
+        id: decoded.id,
+        email: decoded.email,
+        name: decoded.name,
+        image: decoded.image,
+        role: decoded.role || 'customer',
+      };
+      return next();
     }
 
     req.user = user;
@@ -35,7 +50,7 @@ export const verifyToken = async (req, res, next) => {
   } catch (err) {
     return res.status(401).json({
       success: false,
-      message: 'Invalid or expired authentication token',
+      message: 'Invalid or expired authentication token. Please log in again.',
       error: err.message,
     });
   }
@@ -47,7 +62,18 @@ export const verifyAdmin = (req, res, next) => {
   } else {
     return res.status(403).json({
       success: false,
-      message: 'Access forbidden: Administrator privileges required',
+      message: 'Access forbidden: Administrator privileges required.',
+    });
+  }
+};
+
+export const verifySellerOrAdmin = (req, res, next) => {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'seller')) {
+    next();
+  } else {
+    return res.status(403).json({
+      success: false,
+      message: 'Access forbidden: Seller or Administrator privileges required.',
     });
   }
 };

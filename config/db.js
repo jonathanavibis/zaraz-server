@@ -16,7 +16,7 @@ const connectDB = async () => {
     const mongoUri =
       process.env.MONGODB_URI ||
       process.env.MONGODB_URL ||
-      'mongodb+srv://book-admin:ViwhhsBSIAx2WgtW@cluster0.evzoqt4.mongodb.net/zaraz_db?retryWrites=true&w=majority';
+      'mongodb+srv://zaraz-admin:6681CptbyrN76kua@cluster0.qlpxs02.mongodb.net/zaraz_db?retryWrites=true&w=majority';
 
     cachedConnection = await mongoose.connect(mongoUri, {
       serverSelectionTimeoutMS: 8000,
@@ -31,6 +31,15 @@ const connectDB = async () => {
     cachedConnection = null;
     throw error;
   }
+};
+
+/**
+ * Returns the isolated database instance for Authentication and Users
+ * Isolates user credentials in zaraz_auth_db on MongoDB Atlas
+ */
+export const getAuthDb = () => {
+  const authDbName = process.env.AUTH_DB_NAME || 'zaraz_auth_db';
+  return mongoose.connection.useDb(authDbName, { useCache: true });
 };
 
 export default connectDB;
