@@ -1,14 +1,11 @@
 import Banner from '../models/Banner.js';
-import { renderBaseLayout } from '../utils/viewRenderer.js';
+import { renderBaseLayout, isHtmlRequest } from '../utils/viewRenderer.js';
 
 export const getAllBanners = async (req, res) => {
   try {
     const banners = await Banner.find({}).sort({ createdAt: -1 });
 
-    const wantsHtml =
-      req.accepts('html') &&
-      !req.query.format?.includes('json') &&
-      !req.headers.accept?.includes('application/json');
+    const wantsHtml = isHtmlRequest(req);
 
     if (wantsHtml) {
       const cardsHtml = banners.map((b) => {

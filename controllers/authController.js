@@ -131,10 +131,7 @@ export const loginUser = async (req, res) => {
       });
     }
 
-    let isMatch = await user.matchPassword(password);
-    if (!isMatch && user.email === 'user@zaraz.com' && (password === 'password123' || password === 'Password123')) {
-      isMatch = true;
-    }
+    const isMatch = await user.matchPassword(password);
     if (!isMatch) {
       return res.status(401).json({
         success: false,
@@ -395,14 +392,10 @@ export const getAuthOverview = async (req, res) => {
       User.find({}).sort({ createdAt: -1 }).limit(50).catch(() => []),
     ]);
 
-    const wantsHtml =
-      req.accepts('html') &&
-      !req.query.format?.includes('json') &&
-      !req.headers.accept?.includes('application/json');
+    const { renderBaseLayout, isHtmlRequest } = await import('../utils/viewRenderer.js');
+    const wantsHtml = isHtmlRequest(req);
 
     if (wantsHtml) {
-      const { renderBaseLayout } = await import('../utils/viewRenderer.js');
-
       const usersRows = users.map((u) => {
         const roleColors = {
           admin: 'background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);',

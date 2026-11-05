@@ -4,6 +4,22 @@
  * while preserving JSON output for API clients.
  */
 
+export const isHtmlRequest = (req) => {
+  if (req.query.format === 'json') return false;
+  if (req.query.format === 'html' || req.query.format === 'component') return true;
+
+  const accept = req.headers.accept || '';
+  // If client explicitly requests application/json, always return JSON
+  if (accept.includes('application/json')) return false;
+
+  // Browser navigation (typing in address bar or clicking link in browser)
+  const secFetchDest = req.headers['sec-fetch-dest'];
+  if (secFetchDest === 'document') return true;
+
+  // Default browser accept header check
+  return accept.includes('text/html') && !req.xhr;
+};
+
 export const renderBaseLayout = ({
   title = 'Zaraz E-Commerce Component API',
   activeNav = 'dashboard',

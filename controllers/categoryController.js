@@ -1,15 +1,12 @@
 import Category from '../models/Category.js';
 import Product from '../models/Product.js';
-import { renderBaseLayout } from '../utils/viewRenderer.js';
+import { renderBaseLayout, isHtmlRequest } from '../utils/viewRenderer.js';
 
 export const getAllCategories = async (req, res) => {
   try {
     const categories = await Category.find({}).sort({ name: 1 });
 
-    const wantsHtml =
-      req.accepts('html') &&
-      !req.query.format?.includes('json') &&
-      !req.headers.accept?.includes('application/json');
+    const wantsHtml = isHtmlRequest(req);
 
     if (wantsHtml) {
       // Calculate live product count per category

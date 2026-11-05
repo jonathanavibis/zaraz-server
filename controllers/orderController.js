@@ -1,5 +1,5 @@
 import Order from '../models/Order.js';
-import { renderBaseLayout } from '../utils/viewRenderer.js';
+import { renderBaseLayout, isHtmlRequest } from '../utils/viewRenderer.js';
 
 export const createOrder = async (req, res) => {
   try {
@@ -124,10 +124,7 @@ export const getMyOrders = async (req, res) => {
 
     const orders = await Order.find(query).sort({ createdAt: -1 });
 
-    const wantsHtml =
-      req.accepts('html') &&
-      !req.query.format?.includes('json') &&
-      !req.headers.accept?.includes('application/json');
+    const wantsHtml = isHtmlRequest(req);
 
     if (wantsHtml) {
       const rowsHtml = orders.length === 0
@@ -331,10 +328,7 @@ export const getOrderById = async (req, res) => {
     }
 
     if (!order) {
-      const wantsHtml =
-        req.accepts('html') &&
-        !req.query.format?.includes('json') &&
-        !req.headers.accept?.includes('application/json');
+      const wantsHtml = isHtmlRequest(req);
 
       if (wantsHtml) {
         return res.status(404).send(renderBaseLayout({
@@ -357,10 +351,7 @@ export const getOrderById = async (req, res) => {
       });
     }
 
-    const wantsHtml =
-      req.accepts('html') &&
-      !req.query.format?.includes('json') &&
-      !req.headers.accept?.includes('application/json');
+    const wantsHtml = isHtmlRequest(req);
 
     if (wantsHtml) {
       const timelineHtml = (order.timeline || []).map((step, idx) => {

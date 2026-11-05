@@ -10,7 +10,7 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import seedRoutes from './routes/seedRoutes.js';
 import { issueJwt } from './controllers/authController.js';
-import { renderBaseLayout } from './utils/viewRenderer.js';
+import { renderBaseLayout, isHtmlRequest } from './utils/viewRenderer.js';
 import Product from './models/Product.js';
 import Category from './models/Category.js';
 import Banner from './models/Banner.js';
@@ -91,10 +91,7 @@ app.get('/', async (req, res) => {
       ]);
 
     // Check if client prefers JSON or requested ?format=json
-    const acceptsHtml =
-      req.accepts('html') &&
-      !req.query.format?.includes('json') &&
-      !req.headers.accept?.includes('application/json');
+    const acceptsHtml = isHtmlRequest(req);
 
     if (acceptsHtml) {
       const htmlContent = `
@@ -366,10 +363,7 @@ app.use('/seed', seedRoutes);
 
 // Health check endpoint (Component UI for browser, JSON for API)
 app.get('/health', (req, res) => {
-  const wantsHtml =
-    req.accepts('html') &&
-    !req.query.format?.includes('json') &&
-    !req.headers.accept?.includes('application/json');
+  const wantsHtml = isHtmlRequest(req);
 
   if (wantsHtml) {
     const mem = process.memoryUsage();
@@ -441,10 +435,7 @@ app.get('/health', (req, res) => {
 
 // 404 Handler (Component UI for browser, JSON for API)
 app.use((req, res) => {
-  const wantsHtml =
-    req.accepts('html') &&
-    !req.query.format?.includes('json') &&
-    !req.headers.accept?.includes('application/json');
+  const wantsHtml = isHtmlRequest(req);
 
   if (wantsHtml) {
     return res.status(404).send(renderBaseLayout({

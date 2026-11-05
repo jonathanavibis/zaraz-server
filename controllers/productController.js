@@ -1,6 +1,6 @@
 import Product from '../models/Product.js';
 import Category from '../models/Category.js';
-import { renderBaseLayout } from '../utils/viewRenderer.js';
+import { renderBaseLayout, isHtmlRequest } from '../utils/viewRenderer.js';
 
 export const getAllProducts = async (req, res) => {
   try {
@@ -53,10 +53,7 @@ export const getAllProducts = async (req, res) => {
       .limit(parsedLimit);
 
     // Check if client expects HTML Component view or raw JSON
-    const wantsHtml =
-      req.accepts('html') &&
-      !req.query.format?.includes('json') &&
-      !req.headers.accept?.includes('application/json');
+    const wantsHtml = isHtmlRequest(req);
 
     if (wantsHtml) {
       const categories = await Category.find({}).catch(() => []);
@@ -326,10 +323,7 @@ export const getProductById = async (req, res) => {
     }
 
     if (!product) {
-      const wantsHtml =
-        req.accepts('html') &&
-        !req.query.format?.includes('json') &&
-        !req.headers.accept?.includes('application/json');
+      const wantsHtml = isHtmlRequest(req);
 
       if (wantsHtml) {
         return res.status(404).send(renderBaseLayout({
@@ -352,10 +346,7 @@ export const getProductById = async (req, res) => {
       });
     }
 
-    const wantsHtml =
-      req.accepts('html') &&
-      !req.query.format?.includes('json') &&
-      !req.headers.accept?.includes('application/json');
+    const wantsHtml = isHtmlRequest(req);
 
     if (wantsHtml) {
       const img = product.images?.[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&auto=format&fit=crop&q=80';
