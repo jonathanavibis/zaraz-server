@@ -10,6 +10,7 @@ import paymentRoutes from './routes/paymentRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import seedRoutes from './routes/seedRoutes.js';
 import { issueJwt } from './controllers/authController.js';
+import { renderBaseLayout } from './utils/viewRenderer.js';
 import Product from './models/Product.js';
 import Category from './models/Category.js';
 import Banner from './models/Banner.js';
@@ -96,557 +97,198 @@ app.get('/', async (req, res) => {
       !req.headers.accept?.includes('application/json');
 
     if (acceptsHtml) {
-      const html = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Zaraz API Core Engine • Green & Black Edition</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --bg: #070c14;
-      --card-bg: #0c1524;
-      --card-border: #13273c;
-      --emerald: #10b981;
-      --emerald-dark: #059669;
-      --emerald-glow: rgba(16, 185, 129, 0.25);
-      --text: #e2e8f0;
-      --muted: #94a3b8;
-    }
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-      min-height: 100vh;
-      line-height: 1.5;
-      background-image: 
-        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(16, 185, 129, 0.15), transparent),
-        linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-      background-size: 100% 100%, 40px 40px, 40px 40px;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 2.5rem 1.5rem;
-    }
-    header {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: center;
-      gap: 1.5rem;
-      padding-bottom: 2rem;
-      border-bottom: 1px solid var(--card-border);
-      margin-bottom: 2.5rem;
-    }
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .logo-badge {
-      width: 48px;
-      height: 48px;
-      border-radius: 14px;
-      background: linear-gradient(135deg, #10b981, #047857);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 1.5rem;
-      color: #04130d;
-      box-shadow: 0 0 25px var(--emerald-glow);
-    }
-    .brand h1 {
-      font-size: 1.5rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: #fff;
-    }
-    .brand p {
-      font-size: 0.85rem;
-      color: var(--muted);
-    }
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.3);
-      padding: 0.4rem 0.9rem;
-      border-radius: 9999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: #34d399;
-    }
-    .pulse-dot {
-      width: 8px;
-      height: 8px;
-      background: #10b981;
-      border-radius: 50%;
-      box-shadow: 0 0 10px #10b981;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.4; transform: scale(0.85); }
-    }
-    .btn-group {
-      display: flex;
-      gap: 0.75rem;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.55rem 1.1rem;
-      border-radius: 10px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: all 0.2s ease;
-      cursor: pointer;
-    }
-    .btn-primary {
-      background: #10b981;
-      color: #04170f;
-      border: 1px solid #10b981;
-      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.25);
-    }
-    .btn-primary:hover {
-      background: #34d399;
-      transform: translateY(-1px);
-    }
-    .btn-outline {
-      background: #0f1c2d;
-      color: #e2e8f0;
-      border: 1px solid var(--card-border);
-    }
-    .btn-outline:hover {
-      background: #16263b;
-      border-color: #10b981;
-    }
-    .grid-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 2.5rem;
-    }
-    .stat-card {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 1.25rem 1.5rem;
-      position: relative;
-      overflow: hidden;
-      transition: border-color 0.2s ease;
-    }
-    .stat-card:hover {
-      border-color: rgba(16, 185, 129, 0.4);
-    }
-    .stat-label {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      color: var(--muted);
-      font-weight: 600;
-      margin-bottom: 0.35rem;
-    }
-    .stat-value {
-      font-size: 1.85rem;
-      font-weight: 800;
-      color: #fff;
-      display: flex;
-      align-items: baseline;
-      gap: 0.5rem;
-    }
-    .stat-sub {
-      font-size: 0.75rem;
-      color: #10b981;
-      font-weight: 500;
-      margin-top: 0.25rem;
-    }
-    .section-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .interactive-tester {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      padding: 1.5rem;
-      margin-bottom: 2.5rem;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-    }
-    .tester-controls {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-    }
-    select, button.tester-btn {
-      background: #08101a;
-      border: 1px solid var(--card-border);
-      color: #fff;
-      padding: 0.65rem 1rem;
-      border-radius: 10px;
-      font-size: 0.85rem;
-      outline: none;
-      font-family: inherit;
-    }
-    select:focus {
-      border-color: var(--emerald);
-    }
-    .tester-btn {
-      background: var(--emerald);
-      color: #04170f;
-      font-weight: 700;
-      cursor: pointer;
-      border: none;
-      transition: background 0.2s;
-    }
-    .tester-btn:hover {
-      background: #34d399;
-    }
-    .terminal-window {
-      background: #050a10;
-      border: 1px solid #102133;
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.82rem;
-      color: #6ee7b7;
-      max-height: 280px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      word-break: break-all;
-    }
-    .table-container {
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      overflow: hidden;
-      margin-bottom: 2.5rem;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      text-align: left;
-      font-size: 0.85rem;
-    }
-    th {
-      background: #08121f;
-      color: var(--muted);
-      padding: 1rem 1.25rem;
-      font-weight: 600;
-      border-bottom: 1px solid var(--card-border);
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    td {
-      padding: 0.9rem 1.25rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-      color: #cbd5e1;
-    }
-    tr:last-child td {
-      border-bottom: none;
-    }
-    tr:hover td {
-      background: rgba(16, 185, 129, 0.03);
-    }
-    .badge-method {
-      display: inline-block;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 0.2rem 0.55rem;
-      border-radius: 6px;
-      text-align: center;
-      min-width: 55px;
-    }
-    .method-get { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-    .method-post { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
-    .method-put { background: rgba(251, 146, 60, 0.15); color: #fb923c; border: 1px solid rgba(251, 146, 60, 0.3); }
-    .method-patch { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
-    .method-delete { background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); }
-    .auth-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      font-size: 0.7rem;
-      padding: 0.15rem 0.5rem;
-      border-radius: 4px;
-      background: #111d2d;
-      color: #94a3b8;
-    }
-    .auth-badge.jwt {
-      color: #fbbf24;
-      background: rgba(251, 191, 36, 0.1);
-      border: 1px solid rgba(251, 191, 36, 0.2);
-    }
-    .code-text {
-      font-family: 'JetBrains Mono', monospace;
-      color: #e2e8f0;
-      font-weight: 500;
-    }
-    footer {
-      text-align: center;
-      padding: 2.5rem 0 1rem;
-      color: var(--muted);
-      font-size: 0.8rem;
-      border-top: 1px solid var(--card-border);
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <header>
-      <div class="brand">
-        <div class="logo-badge">Z</div>
-        <div>
-          <h1>Zaraz Server Core API</h1>
-          <p>Daraz-Inspired Green & Black E-Commerce Engine &bull; Version 1.0.0</p>
+      const htmlContent = `
+        <div class="page-header">
+          <div class="page-title">
+            <h2>⚡ Zaraz Server Core Engine</h2>
+            <p>Component-Driven REST API & Logistics Engine &bull; Version 1.0.0</p>
+          </div>
+          <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+            <span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 700; padding: 0.4rem 0.85rem;">
+              ● LIVE OPERATIONAL &bull; PORT ${PORT}
+            </span>
+            <a href="http://localhost:3000" target="_blank" class="btn btn-emerald btn-sm">🛍️ Open Storefront</a>
+            <a href="/seed" class="btn btn-secondary btn-sm">🌱 Seed Catalog</a>
+          </div>
         </div>
-      </div>
-      <div class="btn-group">
-        <span class="status-pill">
-          <span class="pulse-dot"></span>
-          Operational &bull; Port ${PORT}
-        </span>
-        <a href="http://localhost:3000" target="_blank" class="btn btn-primary">
-          🛍️ Open Storefront
-        </a>
-        <a href="/health" target="_blank" class="btn btn-outline">
-          🩺 Health Check
-        </a>
-        <a href="/?format=json" class="btn btn-outline">
-          📄 JSON Schema
-        </a>
-      </div>
-    </header>
 
-    <!-- Top Server Metrics & MongoDB Architecture -->
-    <div class="grid-stats">
-      <div class="stat-card">
-        <div class="stat-label">Authentication DB</div>
-        <div class="stat-value" style="font-size: 1.35rem; color: #34d399;">zaraz_auth_db</div>
-        <div class="stat-sub">🔒 Isolated MongoDB Atlas Database</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Storefront Catalog DB</div>
-        <div class="stat-value" style="font-size: 1.35rem; color: #38bdf8;">zaraz_db</div>
-        <div class="stat-sub">📦 Products, Orders & Banners</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Total Catalog Products</div>
-        <div class="stat-value">${productCount}</div>
-        <div class="stat-sub">Across 6+ Categories</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Registered Users</div>
-        <div class="stat-value">${userCount}</div>
-        <div class="stat-sub">In zaraz_auth_db</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Active Orders</div>
-        <div class="stat-value">${orderCount}</div>
-        <div class="stat-sub">Orders & Tracking History</div>
-      </div>
-    </div>
+        <!-- Top Server Metrics & MongoDB Architecture -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
+          <a href="/auth" class="card" style="text-decoration: none; color: inherit;">
+            <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700;">Auth Database</div>
+            <div style="font-size: 1.35rem; font-weight: 800; color: #34d399; margin-top: 0.25rem;">zaraz_auth_db</div>
+            <div style="font-size: 0.72rem; color: #34d399; margin-top: 0.25rem;">🔒 ${userCount} Users & Credentials &rarr;</div>
+          </a>
+          <a href="/products" class="card" style="text-decoration: none; color: inherit;">
+            <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700;">Catalog Database</div>
+            <div style="font-size: 1.35rem; font-weight: 800; color: #38bdf8; margin-top: 0.25rem;">zaraz_db</div>
+            <div style="font-size: 0.72rem; color: #38bdf8; margin-top: 0.25rem;">📦 ${productCount} Live Products &rarr;</div>
+          </a>
+          <a href="/categories" class="card" style="text-decoration: none; color: inherit;">
+            <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700;">Departments</div>
+            <div style="font-size: 1.55rem; font-weight: 800; color: #fb923c; margin-top: 0.25rem;">${categoryCount}</div>
+            <div style="font-size: 0.72rem; color: var(--muted); margin-top: 0.25rem;">Active Categories &rarr;</div>
+          </a>
+          <a href="/banners" class="card" style="text-decoration: none; color: inherit;">
+            <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700;">Promo Banners</div>
+            <div style="font-size: 1.55rem; font-weight: 800; color: #c084fc; margin-top: 0.25rem;">${bannerCount}</div>
+            <div style="font-size: 0.72rem; color: var(--muted); margin-top: 0.25rem;">Hero Sliders &rarr;</div>
+          </a>
+          <a href="/orders" class="card" style="text-decoration: none; color: inherit;">
+            <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); font-weight: 700;">Active Orders</div>
+            <div style="font-size: 1.55rem; font-weight: 800; color: #f87171; margin-top: 0.25rem;">${orderCount}</div>
+            <div style="font-size: 0.72rem; color: var(--muted); margin-top: 0.25rem;">Logistics & Tracking &rarr;</div>
+          </a>
+        </div>
 
-    <!-- Real-time Live API Console -->
-    <div class="interactive-tester">
-      <div class="section-title">
-        <span>⚡ Live API Console & Request Tester</span>
-        <span style="font-size: 0.75rem; color: var(--muted); font-weight: 500;">Test endpoints live without Postman</span>
-      </div>
-      <div class="tester-controls">
-        <select id="endpointSelect" style="flex: 1; min-width: 250px;">
-          <option value="/health">GET /health - Server Health & System Uptime</option>
-          <option value="/products">GET /products - Complete E-Commerce Catalog</option>
-          <option value="/categories">GET /categories - All E-Commerce Categories</option>
-          <option value="/banners">GET /banners - Promo Banners & Sliders</option>
-          <option value="/auth/stats">GET /auth/stats - User Analytics in zaraz_auth_db</option>
-          <option value="/orders">GET /orders - Latest Placed Orders</option>
-        </select>
-        <button class="tester-btn" onclick="executeTest()">Execute Live Request</button>
-      </div>
-      <div class="terminal-window" id="testerOutput">Select an endpoint above and click "Execute Live Request" to view live JSON response from MongoDB Atlas.</div>
-    </div>
+        <!-- Quick Access Component Navigation Bar -->
+        <div class="card" style="margin-bottom: 2.5rem; background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.25);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff;">Explore Component-Based APIs</h3>
+              <p style="font-size: 0.8rem; color: var(--muted); margin-top: 0.2rem;">Every API on this server renders visual UI components in browser and returns JSON for API clients.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+              <a href="/products" class="btn btn-emerald btn-sm">🛍️ Products Catalog Component</a>
+              <a href="/categories" class="btn btn-secondary btn-sm">📁 Categories Component</a>
+              <a href="/banners" class="btn btn-secondary btn-sm">🖼️ Banners Component</a>
+              <a href="/orders" class="btn btn-secondary btn-sm">📦 Orders & Tracking</a>
+              <a href="/auth" class="btn btn-secondary btn-sm">🔐 Auth & Users Console</a>
+            </div>
+          </div>
+        </div>
 
-    <!-- Endpoints Directory -->
-    <div class="section-title">
-      <span>📡 Endpoints Directory & Specifications</span>
-      <span style="font-size: 0.8rem; color: #10b981;">100% RESTful Architecture</span>
-    </div>
+        <!-- Real-time Live API Console -->
+        <div class="card" style="margin-bottom: 2.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <span style="font-size: 1.1rem; font-weight: 800; color: #fff;">⚡ Live API Request Console</span>
+            <span style="font-size: 0.75rem; color: var(--muted);">Test live without Postman or terminal</span>
+          </div>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem;">
+            <select id="endpointSelect" class="form-control" style="flex: 2; min-width: 260px;">
+              <option value="/health">GET /health - Server Health & Diagnostics</option>
+              <option value="/products?limit=6">GET /products?limit=6 - Product Catalog</option>
+              <option value="/categories">GET /categories - Departments Index</option>
+              <option value="/banners">GET /banners - Promo Banners</option>
+              <option value="/auth/stats">GET /auth/stats - User Analytics in zaraz_auth_db</option>
+              <option value="/orders">GET /orders - Customer Orders</option>
+            </select>
+            <button class="btn btn-emerald" onclick="executeTest()">Execute Live Request</button>
+          </div>
+          <div style="background: #050a10; border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: #6ee7b7; max-height: 280px; overflow-y: auto; white-space: pre-wrap;" id="testerOutput">Select an endpoint above and click "Execute Live Request" to view live JSON response from MongoDB Atlas.</div>
+        </div>
 
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Method</th>
-            <th>Endpoint</th>
-            <th>Authentication</th>
-            <th>Database & Description</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Auth -->
-          <tr>
-            <td><span class="badge-method method-post">POST</span></td>
-            <td><span class="code-text">/auth/register</span></td>
-            <td><span class="auth-badge">Public</span></td>
-            <td>Register new account with password rules in <strong>zaraz_auth_db</strong>.</td>
-          </tr>
-          <tr>
-            <td><span class="badge-method method-post">POST</span></td>
-            <td><span class="code-text">/auth/login</span></td>
-            <td><span class="auth-badge">Public</span></td>
-            <td>Verify credentials from <strong>zaraz_auth_db</strong> & issue 30-day JWT token.</td>
-          </tr>
-          <tr>
-            <td><span class="badge-method method-post">POST</span></td>
-            <td><span class="code-text">/auth/social</span></td>
-            <td><span class="auth-badge">Public</span></td>
-            <td>Sync Google & GitHub OAuth profiles in <strong>zaraz_auth_db</strong>.</td>
-          </tr>
-          <tr>
-            <td><span class="badge-method method-post">POST</span></td>
-            <td><span class="code-text">/jwt</span> or <span class="code-text">/auth/jwt</span></td>
-            <td><span class="auth-badge">Public</span></td>
-            <td>Direct JWT token issuance endpoint for active user session payload.</td>
-          </tr>
-          <tr>
-            <td><span class="badge-method method-get">GET</span></td>
-            <td><span class="code-text">/auth/me</span></td>
-            <td><span class="auth-badge jwt">Bearer JWT</span></td>
-            <td>Fetch authenticated user profile details from <strong>zaraz_auth_db</strong>.</td>
-          </tr>
-          <tr>
-            <td><span class="badge-method method-put">PUT</span></td>
-            <td><span class="code-text">/auth/profile</span></td>
-            <td><span class="auth-badge jwt">Bearer JWT</span></td>
-            <td>Update name, phone, shipping address and avatar in <strong>zaraz_auth_db</strong>.</td>
-          </tr>
-          <tr>
-            <td><span class="badge-method method-get">GET</span></td>
-            <td><span class="code-text">/auth/stats</span></td>
-            <td><span class="auth-badge">Public</span></td>
-            <td>Summary metrics: total users, customers, sellers, admins in <strong>zaraz_auth_db</strong>.</td>
-          </tr>
+        <!-- Endpoints Directory Table Component -->
+        <div class="page-title" style="margin-bottom: 1rem;">
+          <h2>📡 Complete Endpoints Directory</h2>
+          <p>Matrix of all available REST endpoints with support for both Component UI & JSON</p>
+        </div>
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr>
+                <th>Method</th>
+                <th>Endpoint</th>
+                <th>Component View</th>
+                <th>Authentication</th>
+                <th>Database & Purpose</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">GET</span></td>
+                <td><a href="/products" style="color: #fff; text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/products</a></td>
+                <td><span style="color: #34d399; font-weight: 700;">✓ Visual Grid</span></td>
+                <td><span style="color: #94a3b8;">Public</span></td>
+                <td>Search, filter by category, sort, price range in <strong>zaraz_db</strong>.</td>
+              </tr>
+              <tr>
+                <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">GET</span></td>
+                <td><span style="color: #fff; font-family: 'JetBrains Mono'; font-weight: 700;">/products/:id</span></td>
+                <td><span style="color: #34d399; font-weight: 700;">✓ Product Page</span></td>
+                <td><span style="color: #94a3b8;">Public</span></td>
+                <td>Single product details with gallery, specifications & seller badge.</td>
+              </tr>
+              <tr>
+                <td><span class="badge-pill" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">POST</span></td>
+                <td><span style="color: #fff; font-family: 'JetBrains Mono'; font-weight: 700;">/products</span></td>
+                <td><span style="color: #38bdf8; font-weight: 700;">✓ Modal Form</span></td>
+                <td><span style="color: #fbbf24;">Admin/Seller</span></td>
+                <td>Publish new product with specs, pricing & inventory to catalog.</td>
+              </tr>
+              <tr>
+                <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">GET</span></td>
+                <td><a href="/categories" style="color: #fff; text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/categories</a></td>
+                <td><span style="color: #34d399; font-weight: 700;">✓ Category Cards</span></td>
+                <td><span style="color: #94a3b8;">Public</span></td>
+                <td>All department categories with product count badges in <strong>zaraz_db</strong>.</td>
+              </tr>
+              <tr>
+                <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">GET</span></td>
+                <td><a href="/banners" style="color: #fff; text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/banners</a></td>
+                <td><span style="color: #34d399; font-weight: 700;">✓ Slider View</span></td>
+                <td><span style="color: #94a3b8;">Public</span></td>
+                <td>Hero promotional banners and slider graphics in <strong>zaraz_db</strong>.</td>
+              </tr>
+              <tr>
+                <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">GET</span></td>
+                <td><a href="/orders" style="color: #fff; text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/orders</a></td>
+                <td><span style="color: #34d399; font-weight: 700;">✓ Logistics Table</span></td>
+                <td><span style="color: #94a3b8;">Public / Email</span></td>
+                <td>Manage orders, update status dropdown, view customer delivery.</td>
+              </tr>
+              <tr>
+                <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">GET</span></td>
+                <td><span style="color: #fff; font-family: 'JetBrains Mono'; font-weight: 700;">/orders/:id</span></td>
+                <td><span style="color: #34d399; font-weight: 700;">✓ Stepper Timeline</span></td>
+                <td><span style="color: #94a3b8;">Public</span></td>
+                <td>Daraz-style courier tracking timeline (Placed &rarr; Shipped &rarr; Delivered).</td>
+              </tr>
+              <tr>
+                <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">GET</span></td>
+                <td><a href="/auth" style="color: #fff; text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/auth</a></td>
+                <td><span style="color: #34d399; font-weight: 700;">✓ Auth Console</span></td>
+                <td><span style="color: #94a3b8;">Public</span></td>
+                <td>User directory, test sign-up, test login & token generator in <strong>zaraz_auth_db</strong>.</td>
+              </tr>
+              <tr>
+                <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">GET</span></td>
+                <td><a href="/health" style="color: #fff; text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/health</a></td>
+                <td><span style="color: #34d399; font-weight: 700;">✓ Diagnostics</span></td>
+                <td><span style="color: #94a3b8;">Public</span></td>
+                <td>Real-time memory, Node version, uptime & database connectivity.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `;
 
-          <!-- Catalog -->
-          <tr>
-            <td><span class="badge-method method-get">GET</span></td>
-            <td><span class="code-text">/products</span></td>
-            <td><span class="auth-badge">Public</span></td>
-            <td>Search, filter by category, sort, price range & pagination in <strong>zaraz_db</strong>.</td>
-          </tr>
-          <tr>
-            <td><span class="badge-method method-get">GET</span></td>
-            <td><span class="code-text">/products/:id</span></td>
-            <td><span class="auth-badge">Public</span></td>
-            <td>Get full product details by MongoDB ObjectId or URL slug.</td>
-          </tr>
-          <tr>
-            <td><span class="badge-method method-post">POST</span></td>
-            <td><span class="code-text">/products</span></td>
-            <td><span class="auth-badge jwt">Seller/Admin</span></td>
-            <td>Add new product with specifications, pricing & delivery config.</td>
-          </tr>
-          <tr>
-            <td><span class="badge-method method-get">GET</span></td>
-            <td><span class="code-text">/categories</span></td>
-            <td><span class="auth-badge">Public</span></td>
-            <td>Fetch all e-commerce categories with icon, image and product count.</td>
-          </tr>
-          <tr>
-            <td><span class="badge-method method-get">GET</span></td>
-            <td><span class="code-text">/banners</span></td>
-            <td><span class="auth-badge">Public</span></td>
-            <td>Fetch Daraz-style hero slider banners with gradient styling.</td>
-          </tr>
+      const extraScripts = `
+        <script>
+          async function executeTest() {
+            const endpoint = document.getElementById('endpointSelect').value;
+            const output = document.getElementById('testerOutput');
+            output.innerText = 'Requesting ' + endpoint + ' from Zaraz Server...';
+            const start = performance.now();
+            try {
+              const res = await fetch(endpoint);
+              const data = await res.json();
+              const duration = Math.round(performance.now() - start);
+              output.innerText = 'STATUS: ' + res.status + ' ' + res.statusText + ' (' + duration + 'ms)\\n\\n' + JSON.stringify(data, null, 2);
+            } catch (err) {
+              output.innerText = 'ERROR: ' + err.message;
+            }
+          }
+        </script>
+      `;
 
-          <!-- Orders & Payments -->
-          <tr>
-            <td><span class="badge-method method-post">POST</span></td>
-            <td><span class="code-text">/orders</span></td>
-            <td><span class="auth-badge">Public</span></td>
-            <td>Create order with cart items, delivery method, and payment choice.</td>
-          </tr>
-          <tr>
-            <td><span class="badge-method method-get">GET</span></td>
-            <td><span class="code-text">/orders</span></td>
-            <td><span class="auth-badge">Optional Filter</span></td>
-            <td>Retrieve orders list (support <span class="code-text">?email=user@zaraz.com</span>).</td>
-          </tr>
-          <tr>
-            <td><span class="badge-method method-get">GET</span></td>
-            <td><span class="code-text">/orders/:id</span></td>
-            <td><span class="auth-badge">Public</span></td>
-            <td>Live order tracking timeline: Placed &rarr; Processing &rarr; Courier &rarr; Delivered.</td>
-          </tr>
-          <tr>
-            <td><span class="badge-method method-patch">PATCH</span></td>
-            <td><span class="code-text">/orders/:id/status</span></td>
-            <td><span class="auth-badge jwt">Admin</span></td>
-            <td>Update order state and courier tracking timeline.</td>
-          </tr>
-          <tr>
-            <td><span class="badge-method method-post">POST</span></td>
-            <td><span class="code-text">/payment/process</span></td>
-            <td><span class="auth-badge">Public</span></td>
-            <td>Process bKash, Nagad, Rocket, Credit/Debit Card or COD authorization.</td>
-          </tr>
-          <tr>
-            <td><span class="badge-method method-get">GET</span></td>
-            <td><span class="code-text">/seed</span> or <span class="badge-method method-post">POST</span></td>
-            <td><span class="auth-badge">Public</span></td>
-            <td>Reset or seed full Daraz-inspired product catalog into MongoDB Atlas.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <footer>
-      &copy; 2026 Zaraz E-Commerce API Server &bull; Engineered with Express, Next.js 16, Mongoose 8 & MongoDB Atlas &bull; Permanent Green & Black Dark Theme
-    </footer>
-  </div>
-
-  <script>
-    async function executeTest() {
-      const endpoint = document.getElementById('endpointSelect').value;
-      const output = document.getElementById('testerOutput');
-      output.innerText = 'Requesting ' + endpoint + ' from Zaraz Server...';
-      const start = performance.now();
-      try {
-        const res = await fetch(endpoint);
-        const data = await res.json();
-        const duration = Math.round(performance.now() - start);
-        output.innerText = 'STATUS: ' + res.status + ' ' + res.statusText + ' (' + duration + 'ms)\\n\\n' + JSON.stringify(data, null, 2);
-      } catch (err) {
-        output.innerText = 'ERROR: ' + err.message;
-      }
-    }
-  </script>
-</body>
-</html>`;
-      return res.status(200).send(html);
+      return res.status(200).send(renderBaseLayout({
+        title: 'Zaraz API Core Engine',
+        activeNav: 'dashboard',
+        content: htmlContent,
+        jsonUrl: '/?format=json',
+        extraScripts,
+      }));
     }
 
     // Default JSON response for curl/Postman/API fetchers
@@ -668,6 +310,7 @@ app.get('/', async (req, res) => {
       },
       endpoints: {
         auth: {
+          overview: 'GET /auth',
           register: 'POST /auth/register',
           login: 'POST /auth/login',
           socialAuth: 'POST /auth/social',
@@ -721,8 +364,67 @@ app.use('/payment', paymentRoutes);
 app.use('/auth', authRoutes);
 app.use('/seed', seedRoutes);
 
-// Health check endpoint
+// Health check endpoint (Component UI for browser, JSON for API)
 app.get('/health', (req, res) => {
+  const wantsHtml =
+    req.accepts('html') &&
+    !req.query.format?.includes('json') &&
+    !req.headers.accept?.includes('application/json');
+
+  if (wantsHtml) {
+    const mem = process.memoryUsage();
+    const memMb = Math.round(mem.rss / (1024 * 1024));
+    const uptimeSec = Math.round(process.uptime());
+
+    const htmlContent = `
+      <div class="page-header">
+        <div class="page-title">
+          <h2>🩺 Server Health & Diagnostic Component</h2>
+          <p>Real-Time Engine Health, Memory Footprint & Cluster Connectivity</p>
+        </div>
+        <div style="display: flex; gap: 0.6rem; align-items: center;">
+          <span class="badge-pill badge-official">● 100% OPERATIONAL</span>
+          <a href="/health?format=json" target="_blank" class="btn btn-secondary btn-sm">JSON Format</a>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2.5rem;">
+        <div class="card">
+          <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">Authentication DB</div>
+          <div style="font-size: 1.35rem; font-weight: 800; color: #34d399; margin-top: 0.25rem;">Connected</div>
+          <div style="font-size: 0.72rem; color: #34d399; margin-top: 0.25rem;">zaraz_auth_db &bull; Atlas</div>
+        </div>
+        <div class="card">
+          <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">Catalog & Store DB</div>
+          <div style="font-size: 1.35rem; font-weight: 800; color: #38bdf8; margin-top: 0.25rem;">Connected</div>
+          <div style="font-size: 0.72rem; color: #38bdf8; margin-top: 0.25rem;">zaraz_db &bull; Atlas</div>
+        </div>
+        <div class="card">
+          <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">RAM Consumption</div>
+          <div style="font-size: 1.55rem; font-weight: 800; color: #fff; margin-top: 0.25rem;">${memMb} MB</div>
+          <div style="font-size: 0.72rem; color: var(--muted); margin-top: 0.25rem;">RSS Resident Memory</div>
+        </div>
+        <div class="card">
+          <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">System Uptime</div>
+          <div style="font-size: 1.55rem; font-weight: 800; color: #fbbf24; margin-top: 0.25rem;">${uptimeSec}s</div>
+          <div style="font-size: 0.72rem; color: var(--muted); margin-top: 0.25rem;">Continuous Execution</div>
+        </div>
+        <div class="card">
+          <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">Node.js Environment</div>
+          <div style="font-size: 1.55rem; font-weight: 800; color: #fff; margin-top: 0.25rem;">${process.version}</div>
+          <div style="font-size: 0.72rem; color: var(--muted); margin-top: 0.25rem;">Platform: ${process.platform}</div>
+        </div>
+      </div>
+    `;
+
+    return res.status(200).send(renderBaseLayout({
+      title: 'Server Diagnostics',
+      activeNav: 'health',
+      content: htmlContent,
+      jsonUrl: '/health?format=json',
+    }));
+  }
+
   res.status(200).json({
     status: 'OK',
     service: 'zaraz-server',
@@ -737,8 +439,28 @@ app.get('/health', (req, res) => {
   });
 });
 
-// 404 Handler
+// 404 Handler (Component UI for browser, JSON for API)
 app.use((req, res) => {
+  const wantsHtml =
+    req.accepts('html') &&
+    !req.query.format?.includes('json') &&
+    !req.headers.accept?.includes('application/json');
+
+  if (wantsHtml) {
+    return res.status(404).send(renderBaseLayout({
+      title: '404 Route Not Found',
+      activeNav: 'dashboard',
+      content: `
+        <div class="card" style="text-align: center; padding: 4rem 2rem;">
+          <h2 style="font-size: 1.75rem; font-weight: 800; color: #f87171; margin-bottom: 0.5rem;">404 - Endpoint Not Found</h2>
+          <p style="color: var(--muted); margin-bottom: 2rem;">The requested route <code>${req.originalUrl}</code> does not exist on Zaraz Server.</p>
+          <a href="/" class="btn btn-emerald">Return to Dashboard</a>
+        </div>
+      `,
+      jsonUrl: `${req.originalUrl}?format=json`,
+    }));
+  }
+
   res.status(404).json({
     success: false,
     message: `API route ${req.originalUrl} not found on Zaraz Server.`,

@@ -9,10 +9,14 @@ import {
   updateProfile,
   getAllUsers,
   getUserStats,
+  getAuthOverview,
 } from '../controllers/authController.js';
 import { verifyToken, verifyAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
+
+// Auth Component Overview (Component UI for browser, JSON for API)
+router.get('/', getAuthOverview);
 
 // Public Authentication endpoints
 router.post('/register', registerUser);
