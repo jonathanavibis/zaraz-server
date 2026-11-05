@@ -403,7 +403,7 @@ export const getProductById = async (req, res) => {
               </div>
               <p style="font-size: 0.9rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 1.5rem;">${product.description || 'Full product description and high-grade quality guaranteed by Zaraz Official Store.'}</p>
               <div style="display: flex; gap: 0.75rem;">
-                <a href="http://localhost:3000/products/${product._id}" target="_blank" class="btn btn-emerald" style="flex: 1;">Open on Zaraz Storefront &rarr;</a>
+                <a href="${process.env.CLIENT_URL || 'https://zaraz.vercel.app'}/products/${product._id}" target="_blank" class="btn btn-emerald" style="flex: 1;">Open on Zaraz Storefront &rarr;</a>
               </div>
             </div>
 

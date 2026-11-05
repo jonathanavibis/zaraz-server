@@ -532,7 +532,7 @@ export const renderBaseLayout = ({
         <a href="${jsonUrl}" class="btn btn-secondary btn-sm" title="Switch to raw JSON API output">
           📄 Raw JSON
         </a>
-        <a href="http://localhost:3000" target="_blank" class="btn btn-emerald btn-sm">
+        <a href="${process.env.CLIENT_URL || 'https://zaraz.vercel.app'}" target="_blank" class="btn btn-emerald btn-sm">
           🛍️ Storefront
         </a>
       </div>

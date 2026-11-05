@@ -32,6 +32,7 @@ app.set('json spaces', 2);
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
+  'https://zaraz.vercel.app',
   process.env.CLIENT_URL,
   process.env.FRONTEND_URL,
 ].filter(Boolean);
@@ -104,7 +105,7 @@ app.get('/', async (req, res) => {
             <span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 700; padding: 0.4rem 0.85rem;">
               ● LIVE OPERATIONAL &bull; PORT ${PORT}
             </span>
-            <a href="http://localhost:3000" target="_blank" class="btn btn-emerald btn-sm">🛍️ Open Storefront</a>
+            <a href="${process.env.CLIENT_URL || 'https://zaraz.vercel.app'}" target="_blank" class="btn btn-emerald btn-sm">🛍️ Open Storefront</a>
             <a href="/seed" class="btn btn-secondary btn-sm">🌱 Seed Catalog</a>
           </div>
         </div>
