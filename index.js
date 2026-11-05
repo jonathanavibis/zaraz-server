@@ -66,8 +66,8 @@ app.use(async (req, res, next) => {
 });
 
 // Direct top-level /jwt endpoint for token issuance (mirrors /auth/jwt)
-app.post('/jwt', issueJwt);
-app.get('/jwt', (req, res) => {
+app.post(['/jwt', '/api/jwt'], issueJwt);
+app.get(['/jwt', '/api/jwt'], (req, res) => {
   res.status(200).json({
     success: true,
     message: 'Zaraz JWT Token Issuer. Send POST /jwt with user payload to issue a signed 30-day token.',
@@ -353,17 +353,17 @@ app.get('/', async (req, res) => {
   }
 });
 
-// API Routes
-app.use('/products', productRoutes);
-app.use('/categories', categoryRoutes);
-app.use('/banners', bannerRoutes);
-app.use('/orders', orderRoutes);
-app.use('/payment', paymentRoutes);
-app.use('/auth', authRoutes);
-app.use('/seed', seedRoutes);
+// API Routes (mounted under both /<resource> and /api/<resource>)
+app.use(['/products', '/api/products'], productRoutes);
+app.use(['/categories', '/api/categories'], categoryRoutes);
+app.use(['/banners', '/api/banners'], bannerRoutes);
+app.use(['/orders', '/api/orders'], orderRoutes);
+app.use(['/payment', '/api/payment'], paymentRoutes);
+app.use(['/auth', '/api/auth'], authRoutes);
+app.use(['/seed', '/api/seed'], seedRoutes);
 
 // Health check endpoint (Component UI for browser, JSON for API)
-app.get('/health', (req, res) => {
+app.get(['/health', '/api/health'], (req, res) => {
   const wantsHtml = isHtmlRequest(req);
 
   if (wantsHtml) {
