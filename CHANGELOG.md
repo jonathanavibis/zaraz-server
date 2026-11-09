@@ -597,3 +597,7 @@
 ### [Commit #144] chore(config): configure npm dev script with nodemon for hot-reloading
 - **Timestamp:** `2026-11-09T19:23:10.801Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #145] chore(config): configure npm start script for Vercel production invocation
+- **Timestamp:** `2026-11-09T19:23:11.414Z`
+- **Target:** `D:/Project/zaraz-server`
