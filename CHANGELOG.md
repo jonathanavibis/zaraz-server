@@ -105,3 +105,7 @@
 ### [Commit #21] feat(categories): implement category creation controller with auto-slug generation
 - **Timestamp:** `2026-11-09T19:22:00.566Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #22] feat(categories): add category image and display icon attribute support
+- **Timestamp:** `2026-11-09T19:22:01.234Z`
+- **Target:** `D:/Project/zaraz-server`
