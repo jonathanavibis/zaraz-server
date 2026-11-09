@@ -605,3 +605,7 @@
 ### [Commit #146] chore(env): add .env.example template documenting all required secret keys
 - **Timestamp:** `2026-11-09T19:23:11.911Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #147] chore(security): sanitize error message stack traces in production environment
+- **Timestamp:** `2026-11-09T19:23:12.401Z`
+- **Target:** `D:/Project/zaraz-server`
