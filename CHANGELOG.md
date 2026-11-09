@@ -269,3 +269,7 @@
 ### [Commit #62] fix(catalog): ensure stock field defaults to positive integer value
 - **Timestamp:** `2026-11-09T19:22:28.489Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #63] fix(order): initialize payment status as Settled for online payment channels
+- **Timestamp:** `2026-11-09T19:22:28.989Z`
+- **Target:** `D:/Project/zaraz-server`
