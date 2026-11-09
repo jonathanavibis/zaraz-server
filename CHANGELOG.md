@@ -245,3 +245,7 @@
 ### [Commit #56] fix(validation): handle empty image array fallback in product card rendering
 - **Timestamp:** `2026-11-09T19:22:25.386Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #57] fix(validation): normalize customer email to lowercase before querying orders
+- **Timestamp:** `2026-11-09T19:22:25.885Z`
+- **Target:** `D:/Project/zaraz-server`
