@@ -353,3 +353,7 @@
 ### [Commit #83] refactor(views): separate layout shell from page-specific component contents
 - **Timestamp:** `2026-11-09T19:22:39.707Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #84] refactor(routes): modularize auth routes into dedicated Express Router
+- **Timestamp:** `2026-11-09T19:22:40.252Z`
+- **Target:** `D:/Project/zaraz-server`
