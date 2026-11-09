@@ -89,3 +89,7 @@
 ### [Commit #17] feat(catalog): implement soft delete and hard delete operations for products
 - **Timestamp:** `2026-11-09T19:21:56.840Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #18] feat(catalog): add discount percentage auto-calculation from original price
+- **Timestamp:** `2026-11-09T19:21:57.422Z`
+- **Target:** `D:/Project/zaraz-server`
