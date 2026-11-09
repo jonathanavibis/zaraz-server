@@ -509,3 +509,7 @@
 ### [Commit #122] test(catalog): add test case for case-insensitive product search regex
 - **Timestamp:** `2026-11-09T19:22:59.683Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #123] test(catalog): add test case for slug-based product lookup fallback
+- **Timestamp:** `2026-11-09T19:23:00.244Z`
+- **Target:** `D:/Project/zaraz-server`
