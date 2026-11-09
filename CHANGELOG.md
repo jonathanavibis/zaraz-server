@@ -337,3 +337,7 @@
 ### [Commit #79] refactor(controllers): simplify order timeline update logic with map transform
 - **Timestamp:** `2026-11-09T19:22:37.671Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #80] refactor(middleware): optimize express json body parser limit to 10mb for base64
+- **Timestamp:** `2026-11-09T19:22:38.161Z`
+- **Target:** `D:/Project/zaraz-server`
