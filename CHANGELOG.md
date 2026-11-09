@@ -49,3 +49,7 @@
 ### [Commit #7] feat(auth): add user analytics endpoint with count of customers and sellers
 - **Timestamp:** `2026-11-09T19:21:51.760Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #8] feat(auth): add database isolation separating auth vault into zaraz_auth_db
+- **Timestamp:** `2026-11-09T19:21:52.224Z`
+- **Target:** `D:/Project/zaraz-server`
