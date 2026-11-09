@@ -65,3 +65,7 @@
 ### [Commit #11] feat(catalog): implement category filtering by slug with regex matching
 - **Timestamp:** `2026-11-09T19:21:53.777Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #12] feat(catalog): add price range query parameters for catalog search
+- **Timestamp:** `2026-11-09T19:21:54.245Z`
+- **Target:** `D:/Project/zaraz-server`
