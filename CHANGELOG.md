@@ -149,3 +149,7 @@
 ### [Commit #32] feat(orders): implement delivery method calculation for standard and express courier
 - **Timestamp:** `2026-11-09T19:22:08.941Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #33] feat(orders): support multiple payment methods including COD, bKash, and Card
+- **Timestamp:** `2026-11-09T19:22:09.638Z`
+- **Target:** `D:/Project/zaraz-server`
