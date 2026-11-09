@@ -381,3 +381,7 @@
 ### [Commit #90] perf(db): add compound index on categorySlug and createdAt for faster queries
 - **Timestamp:** `2026-11-09T19:22:43.561Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #91] perf(db): add text index on product title and brand for search acceleration
+- **Timestamp:** `2026-11-09T19:22:44.055Z`
+- **Target:** `D:/Project/zaraz-server`
