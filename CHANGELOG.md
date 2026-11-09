@@ -365,3 +365,7 @@
 ### [Commit #86] refactor(routes): modularize category routes into dedicated Express Router
 - **Timestamp:** `2026-11-09T19:22:41.356Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #87] refactor(routes): modularize banner routes into dedicated Express Router
+- **Timestamp:** `2026-11-09T19:22:42.127Z`
+- **Target:** `D:/Project/zaraz-server`
