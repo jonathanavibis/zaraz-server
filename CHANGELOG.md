@@ -485,3 +485,7 @@
 ### [Commit #116] docs(architecture): document Express serverless lifecycle on Vercel Edge
 - **Timestamp:** `2026-11-09T19:22:56.505Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #117] test(auth): add unit test assertions for bcrypt password hash verification
+- **Timestamp:** `2026-11-09T19:22:56.980Z`
+- **Target:** `D:/Project/zaraz-server`
