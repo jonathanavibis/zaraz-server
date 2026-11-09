@@ -249,3 +249,7 @@
 ### [Commit #57] fix(validation): normalize customer email to lowercase before querying orders
 - **Timestamp:** `2026-11-09T19:22:25.885Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #58] fix(validation): ensure telephone number field sanitization removes spaces
+- **Timestamp:** `2026-11-09T19:22:26.362Z`
+- **Target:** `D:/Project/zaraz-server`
