@@ -465,3 +465,7 @@
 ### [Commit #111] docs(readme): add Vercel serverless deployment and environment variable guide
 - **Timestamp:** `2026-11-09T19:22:54.040Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #112] docs(readme): document two-way sync architecture connecting Storefront and API
+- **Timestamp:** `2026-11-09T19:22:54.554Z`
+- **Target:** `D:/Project/zaraz-server`
