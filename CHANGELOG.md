@@ -477,3 +477,7 @@
 ### [Commit #114] docs(changelog): document v1.0.0 release milestone and component engine features
 - **Timestamp:** `2026-11-09T19:22:55.543Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #115] docs(architecture): create database entity relationship overview markdown
+- **Timestamp:** `2026-11-09T19:22:56.024Z`
+- **Target:** `D:/Project/zaraz-server`
