@@ -437,3 +437,7 @@
 ### [Commit #104] docs(api): document POST /auth/login credentials format and error codes
 - **Timestamp:** `2026-11-09T19:22:50.674Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #105] docs(api): document GET /auth/me bearer token authorization header requirement
+- **Timestamp:** `2026-11-09T19:22:51.154Z`
+- **Target:** `D:/Project/zaraz-server`
