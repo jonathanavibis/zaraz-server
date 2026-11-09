@@ -593,3 +593,7 @@
 ### [Commit #143] chore(config): add .gitignore rules for logs, environment files, and artifacts
 - **Timestamp:** `2026-11-09T19:23:10.197Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #144] chore(config): configure npm dev script with nodemon for hot-reloading
+- **Timestamp:** `2026-11-09T19:23:10.801Z`
+- **Target:** `D:/Project/zaraz-server`
