@@ -225,3 +225,7 @@
 ### [Commit #51] fix(cors): permit all .vercel.app origin domains with credentials support
 - **Timestamp:** `2026-11-09T19:22:22.951Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #52] fix(headers): add no-store and no-cache headers to eliminate stale catalog caching
+- **Timestamp:** `2026-11-09T19:22:23.436Z`
+- **Target:** `D:/Project/zaraz-server`
