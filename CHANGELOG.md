@@ -273,3 +273,7 @@
 ### [Commit #63] fix(order): initialize payment status as Settled for online payment channels
 - **Timestamp:** `2026-11-09T19:22:28.989Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #64] fix(telemetry): guard against missing process.memoryUsage in constrained environments
+- **Timestamp:** `2026-11-09T19:22:29.461Z`
+- **Target:** `D:/Project/zaraz-server`
