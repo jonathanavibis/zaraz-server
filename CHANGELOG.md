@@ -117,3 +117,7 @@
 ### [Commit #24] feat(banners): add promotional campaign banner creation controller
 - **Timestamp:** `2026-11-09T19:22:02.387Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #25] feat(banners): add banner tag, title, subtitle, and CTA link support
+- **Timestamp:** `2026-11-09T19:22:03.304Z`
+- **Target:** `D:/Project/zaraz-server`
