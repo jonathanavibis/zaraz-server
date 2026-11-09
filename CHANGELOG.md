@@ -265,3 +265,7 @@
 ### [Commit #61] fix(catalog): handle invalid 24-character hex ID gracefully in getProductById
 - **Timestamp:** `2026-11-09T19:22:28.002Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #62] fix(catalog): ensure stock field defaults to positive integer value
+- **Timestamp:** `2026-11-09T19:22:28.489Z`
+- **Target:** `D:/Project/zaraz-server`
