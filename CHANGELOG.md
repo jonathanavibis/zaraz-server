@@ -13,3 +13,7 @@
 - Timestamp: 2026-11-10 01:20:29
 
 
+### docs(api): document POST /auth/register request payload and token response
+- Timestamp: 2026-11-10 01:20:29
+
+
