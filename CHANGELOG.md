@@ -349,3 +349,7 @@
 ### [Commit #82] refactor(views): organize CSS tokens into custom properties in viewRenderer
 - **Timestamp:** `2026-11-09T19:22:39.170Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #83] refactor(views): separate layout shell from page-specific component contents
+- **Timestamp:** `2026-11-09T19:22:39.707Z`
+- **Target:** `D:/Project/zaraz-server`
