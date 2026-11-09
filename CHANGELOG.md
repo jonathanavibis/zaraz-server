@@ -313,3 +313,7 @@
 ### [Commit #73] refactor(models): define explicit mongoose schema types and defaults for Order
 - **Timestamp:** `2026-11-09T19:22:34.692Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #74] refactor(models): define explicit mongoose schema types and defaults for User
+- **Timestamp:** `2026-11-09T19:22:35.176Z`
+- **Target:** `D:/Project/zaraz-server`
