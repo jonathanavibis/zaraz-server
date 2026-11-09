@@ -393,3 +393,7 @@
 ### [Commit #93] perf(db): add index on user email in zaraz_auth_db for O(1) auth queries
 - **Timestamp:** `2026-11-09T19:22:45.029Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #94] perf(db): use lean queries where document mutation is not required
+- **Timestamp:** `2026-11-09T19:22:45.505Z`
+- **Target:** `D:/Project/zaraz-server`
