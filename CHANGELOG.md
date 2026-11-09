@@ -213,3 +213,7 @@
 ### [Commit #48] feat(ui): add endpoints directory table with direct component view navigation
 - **Timestamp:** `2026-11-09T19:22:21.491Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #49] feat(ui): add tab switcher navigation for Overview, Processes, Sync, and Console
+- **Timestamp:** `2026-11-09T19:22:21.988Z`
+- **Target:** `D:/Project/zaraz-server`
