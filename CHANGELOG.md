@@ -285,3 +285,7 @@
 ### [Commit #66] fix(ui): prevent horizontal scroll overflow on mobile viewport sizes
 - **Timestamp:** `2026-11-09T19:22:30.503Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #67] fix(ui): ensure table rows wrap gracefully on narrow screen resolutions
+- **Timestamp:** `2026-11-09T19:22:30.980Z`
+- **Target:** `D:/Project/zaraz-server`
