@@ -109,3 +109,7 @@
 ### [Commit #22] feat(categories): add category image and display icon attribute support
 - **Timestamp:** `2026-11-09T19:22:01.234Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #23] feat(banners): implement getAllBanners endpoint for storefront hero carousel
+- **Timestamp:** `2026-11-09T19:22:01.769Z`
+- **Target:** `D:/Project/zaraz-server`
