@@ -253,3 +253,7 @@
 ### [Commit #58] fix(validation): ensure telephone number field sanitization removes spaces
 - **Timestamp:** `2026-11-09T19:22:26.362Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #59] fix(auth): return 409 conflict when email already exists in zaraz_auth_db
+- **Timestamp:** `2026-11-09T19:22:27.004Z`
+- **Target:** `D:/Project/zaraz-server`
