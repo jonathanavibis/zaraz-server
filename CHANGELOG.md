@@ -401,3 +401,7 @@
 ### [Commit #95] perf(api): set max-age=0 and must-revalidate on all dynamic catalog responses
 - **Timestamp:** `2026-11-09T19:22:45.981Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #96] perf(views): inline critical SVG sparkline definitions to avoid network latency
+- **Timestamp:** `2026-11-09T19:22:46.455Z`
+- **Target:** `D:/Project/zaraz-server`
