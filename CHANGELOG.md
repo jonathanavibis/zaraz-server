@@ -601,3 +601,7 @@
 ### [Commit #145] chore(config): configure npm start script for Vercel production invocation
 - **Timestamp:** `2026-11-09T19:23:11.414Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #146] chore(env): add .env.example template documenting all required secret keys
+- **Timestamp:** `2026-11-09T19:23:11.911Z`
+- **Target:** `D:/Project/zaraz-server`
