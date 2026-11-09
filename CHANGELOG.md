@@ -201,3 +201,7 @@
 ### [Commit #45] feat(ui): add bandwidth and two-way sync throughput chart with in-sync gauge
 - **Timestamp:** `2026-11-09T19:22:18.440Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #46] feat(ui): add active containers panel for storefront, core api, and mongo clusters
+- **Timestamp:** `2026-11-09T19:22:19.679Z`
+- **Target:** `D:/Project/zaraz-server`
