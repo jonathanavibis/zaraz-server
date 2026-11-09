@@ -209,3 +209,7 @@
 ### [Commit #47] feat(ui): add live interactive API request console with JSON syntax formatting
 - **Timestamp:** `2026-11-09T19:22:20.615Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #48] feat(ui): add endpoints directory table with direct component view navigation
+- **Timestamp:** `2026-11-09T19:22:21.491Z`
+- **Target:** `D:/Project/zaraz-server`
