@@ -505,3 +505,7 @@
 ### [Commit #121] test(catalog): add test case for product price range query filtering
 - **Timestamp:** `2026-11-09T19:22:59.078Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #122] test(catalog): add test case for case-insensitive product search regex
+- **Timestamp:** `2026-11-09T19:22:59.683Z`
+- **Target:** `D:/Project/zaraz-server`
