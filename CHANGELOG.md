@@ -417,3 +417,7 @@
 ### [Commit #99] perf(telemetry): throttle simulated CPU pulse interval to prevent event loop delay
 - **Timestamp:** `2026-11-09T19:22:47.895Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #100] docs(api): document GET /products query parameters and filter options
+- **Timestamp:** `2026-11-09T19:22:48.365Z`
+- **Target:** `D:/Project/zaraz-server`
