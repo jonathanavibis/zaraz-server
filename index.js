@@ -32,7 +32,7 @@ app.set('json spaces', 2);
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
-  'https://zaraz.vercel.app',
+  'https://zaraz-shopping.vercel.app',
   process.env.CLIENT_URL,
   process.env.FRONTEND_URL,
 ].filter(Boolean);

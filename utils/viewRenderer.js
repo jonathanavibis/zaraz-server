@@ -19,7 +19,7 @@ export const isHtmlRequest = (req) => {
 };
 
 export const renderBaseLayout = ({
-  title = 'Zaraz Server Core Engine',
+  title = 'Zaraz Dashboard',
   activeNav = 'dashboard',
   content = '',
   jsonUrl = '?format=json',
