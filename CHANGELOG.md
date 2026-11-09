@@ -77,3 +77,7 @@
 ### [Commit #14] feat(catalog): add getProductById with support for both ObjectId and slug
 - **Timestamp:** `2026-11-09T19:21:55.212Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #15] feat(catalog): create product creation endpoint with automatic slugify
+- **Timestamp:** `2026-11-09T19:21:55.702Z`
+- **Target:** `D:/Project/zaraz-server`
