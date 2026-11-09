@@ -493,3 +493,7 @@
 ### [Commit #118] test(auth): add unit test coverage for JWT signature and expiration verification
 - **Timestamp:** `2026-11-09T19:22:57.528Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #119] test(auth): add test case for duplicate email registration 409 rejection
+- **Timestamp:** `2026-11-09T19:22:58.047Z`
+- **Target:** `D:/Project/zaraz-server`
