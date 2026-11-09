@@ -445,3 +445,7 @@
 ### [Commit #106] docs(api): document POST /orders order creation structure and pricing object
 - **Timestamp:** `2026-11-09T19:22:51.632Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #107] docs(api): document PATCH /orders/:id/status delivery state transitions
+- **Timestamp:** `2026-11-09T19:22:52.112Z`
+- **Target:** `D:/Project/zaraz-server`
