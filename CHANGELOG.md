@@ -25,3 +25,7 @@
 ### [Commit #1] feat(auth): implement user registration controller with bcrypt password hashing
 - **Timestamp:** `2026-11-09T19:21:48.737Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #2] feat(auth): add 30-day JWT signed bearer token generation helper
+- **Timestamp:** `2026-11-09T19:21:49.273Z`
+- **Target:** `D:/Project/zaraz-server`
