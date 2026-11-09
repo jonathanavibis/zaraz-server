@@ -389,3 +389,7 @@
 ### [Commit #92] perf(db): add index on order tracking number for instantaneous lookup
 - **Timestamp:** `2026-11-09T19:22:44.537Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #93] perf(db): add index on user email in zaraz_auth_db for O(1) auth queries
+- **Timestamp:** `2026-11-09T19:22:45.029Z`
+- **Target:** `D:/Project/zaraz-server`
