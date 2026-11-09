@@ -309,3 +309,7 @@
 ### [Commit #72] refactor(models): define explicit mongoose schema types and defaults for Product
 - **Timestamp:** `2026-11-09T19:22:34.171Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #73] refactor(models): define explicit mongoose schema types and defaults for Order
+- **Timestamp:** `2026-11-09T19:22:34.692Z`
+- **Target:** `D:/Project/zaraz-server`
