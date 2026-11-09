@@ -257,3 +257,7 @@
 ### [Commit #59] fix(auth): return 409 conflict when email already exists in zaraz_auth_db
 - **Timestamp:** `2026-11-09T19:22:27.004Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #60] fix(auth): verify JWT secret fallback key for production resilience
+- **Timestamp:** `2026-11-09T19:22:27.522Z`
+- **Target:** `D:/Project/zaraz-server`
