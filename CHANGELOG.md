@@ -525,3 +525,7 @@
 ### [Commit #126] test(orders): add test case for order tracking number prefix validation
 - **Timestamp:** `2026-11-09T19:23:01.748Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #127] test(orders): add test case for missing customer delivery info 400 response
+- **Timestamp:** `2026-11-09T19:23:02.254Z`
+- **Target:** `D:/Project/zaraz-server`
