@@ -585,3 +585,7 @@
 ### [Commit #141] chore(deps): audit dependencies and remove unused legacy packages
 - **Timestamp:** `2026-11-09T19:23:09.171Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #142] chore(config): update vercel.json rewrites routing all traffic to index.js
+- **Timestamp:** `2026-11-09T19:23:09.647Z`
+- **Target:** `D:/Project/zaraz-server`
