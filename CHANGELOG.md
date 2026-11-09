@@ -81,3 +81,7 @@
 ### [Commit #15] feat(catalog): create product creation endpoint with automatic slugify
 - **Timestamp:** `2026-11-09T19:21:55.702Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #16] feat(catalog): implement product update controller with partial payload support
+- **Timestamp:** `2026-11-09T19:21:56.164Z`
+- **Target:** `D:/Project/zaraz-server`
