@@ -113,3 +113,7 @@
 ### [Commit #23] feat(banners): implement getAllBanners endpoint for storefront hero carousel
 - **Timestamp:** `2026-11-09T19:22:01.769Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #24] feat(banners): add promotional campaign banner creation controller
+- **Timestamp:** `2026-11-09T19:22:02.387Z`
+- **Target:** `D:/Project/zaraz-server`
