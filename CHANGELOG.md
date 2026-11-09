@@ -549,3 +549,7 @@
 ### [Commit #132] style(theme): fine-tune mint green text accent readability (#34d399)
 - **Timestamp:** `2026-11-09T19:23:04.706Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #133] style(theme): optimize card border subtle contrast to match website (#13273c)
+- **Timestamp:** `2026-11-09T19:23:05.220Z`
+- **Target:** `D:/Project/zaraz-server`
