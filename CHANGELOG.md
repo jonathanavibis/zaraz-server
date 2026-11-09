@@ -93,3 +93,7 @@
 ### [Commit #18] feat(catalog): add discount percentage auto-calculation from original price
 - **Timestamp:** `2026-11-09T19:21:57.422Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #19] feat(categories): implement getAllCategories endpoint with alphabetical sort
+- **Timestamp:** `2026-11-09T19:21:58.031Z`
+- **Target:** `D:/Project/zaraz-server`
