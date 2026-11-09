@@ -58,6 +58,7 @@ export const renderBaseLayout = ({
       --text-heading: #ffffff;
       --text-body: #e2e8f0;
       --text-muted: #94a3b8;
+      --muted: #94a3b8;
       --text-subtle: #64748b;
       
       --accent-orange: #fbbf24;      /* Website Daraz Flash Accent */
@@ -217,9 +218,43 @@ export const renderBaseLayout = ({
       border-color: var(--emerald);
       color: #fff;
     }
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #f87171;
+    }
+    .btn-danger:hover {
+      background: #ef4444;
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
     .btn-sm {
       padding: 0.3rem 0.7rem;
       font-size: 0.75rem;
+    }
+
+    /* Tabs */
+    .tab-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.4rem 0.85rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .tab-btn.active {
+      background: var(--bg-card);
+      color: var(--emerald-light);
+      border-color: var(--emerald);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4), 0 0 10px var(--emerald-glow);
     }
 
     /* Main App Layout */
@@ -402,7 +437,7 @@ export const renderBaseLayout = ({
     }
 
     /* Cards */
-    .panel-card {
+    .panel-card, .card {
       background: var(--bg-card);
       border: 1px solid var(--border-card);
       border-radius: 16px;
@@ -412,8 +447,164 @@ export const renderBaseLayout = ({
       flex-direction: column;
       justify-content: space-between;
     }
-    .panel-card:hover {
+    .panel-card:hover, .card:hover {
       border-color: var(--border-card-hover);
+    }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .page-title h2 {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .page-title p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+    .badge-api {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--emerald-light);
+      padding: 0.25rem 0.65rem;
+      border-radius: 8px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+    .product-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 14px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.2s ease;
+    }
+    .product-card:hover {
+      border-color: var(--emerald);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4), 0 0 15px var(--emerald-glow);
+    }
+    .product-img-wrap {
+      height: 200px;
+      background: #050a10;
+      position: relative;
+      overflow: hidden;
+    }
+    .product-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    .product-card:hover .product-img {
+      transform: scale(1.05);
+    }
+    .product-badge-corner {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+      z-index: 2;
+    }
+    .product-body {
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+    .product-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 0.35rem;
+    }
+    .product-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #fff;
+      text-decoration: none;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 0.6rem;
+      line-height: 1.4;
+    }
+    .product-title:hover {
+      color: var(--emerald-light);
+    }
+    .price-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .current-price {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #fff;
+    }
+    .orig-price {
+      font-size: 0.8rem;
+      color: var(--text-subtle);
+      text-decoration: line-through;
+    }
+    .discount-pill {
+      font-size: 0.68rem;
+      font-weight: 800;
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .product-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 0.6rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .rating-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: #fbbf24;
+    }
+    .badge-flash {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+    .badge-official {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .badge-free-del {
+      background: rgba(56, 189, 248, 0.2);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
     }
     .panel-header {
       display: flex;
