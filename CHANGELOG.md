@@ -405,3 +405,7 @@
 ### [Commit #96] perf(views): inline critical SVG sparkline definitions to avoid network latency
 - **Timestamp:** `2026-11-09T19:22:46.455Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #97] perf(views): load Google Fonts asynchronously with preconnect resource hints
+- **Timestamp:** `2026-11-09T19:22:46.939Z`
+- **Target:** `D:/Project/zaraz-server`
