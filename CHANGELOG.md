@@ -57,3 +57,7 @@
 ### [Commit #9] feat(catalog): implement getAllProducts with pagination and sorting options
 - **Timestamp:** `2026-11-09T19:21:52.831Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #10] feat(catalog): add product search filter querying title, brand, and description
+- **Timestamp:** `2026-11-09T19:21:53.296Z`
+- **Target:** `D:/Project/zaraz-server`
