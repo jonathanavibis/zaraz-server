@@ -425,3 +425,7 @@
 ### [Commit #101] docs(api): document POST /products payload schema and validation rules
 - **Timestamp:** `2026-11-09T19:22:48.843Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #102] docs(api): document GET /products/:id response format for single items
+- **Timestamp:** `2026-11-09T19:22:49.493Z`
+- **Target:** `D:/Project/zaraz-server`
