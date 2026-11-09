@@ -377,3 +377,7 @@
 ### [Commit #89] refactor(routes): modularize seed routes for database initialization
 - **Timestamp:** `2026-11-09T19:22:43.092Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #90] perf(db): add compound index on categorySlug and createdAt for faster queries
+- **Timestamp:** `2026-11-09T19:22:43.561Z`
+- **Target:** `D:/Project/zaraz-server`
