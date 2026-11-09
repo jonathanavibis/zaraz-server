@@ -521,3 +521,7 @@
 ### [Commit #125] test(orders): add test case for order timeline initial state generation
 - **Timestamp:** `2026-11-09T19:23:01.245Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #126] test(orders): add test case for order tracking number prefix validation
+- **Timestamp:** `2026-11-09T19:23:01.748Z`
+- **Target:** `D:/Project/zaraz-server`
