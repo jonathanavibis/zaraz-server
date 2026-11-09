@@ -561,3 +561,7 @@
 ### [Commit #135] style(ui): enhance active navigation item pill shadow and icon alignment
 - **Timestamp:** `2026-11-09T19:23:06.207Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #136] style(ui): refine modal close button hover state and backdrop blur filter
+- **Timestamp:** `2026-11-09T19:23:06.697Z`
+- **Target:** `D:/Project/zaraz-server`
