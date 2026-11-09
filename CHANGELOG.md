@@ -329,3 +329,7 @@
 ### [Commit #77] refactor(controllers): extract isHtmlRequest detection helper into viewRenderer
 - **Timestamp:** `2026-11-09T19:22:36.685Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #78] refactor(controllers): clean up query parameter parsing in productController
+- **Timestamp:** `2026-11-09T19:22:37.187Z`
+- **Target:** `D:/Project/zaraz-server`
