@@ -457,3 +457,7 @@
 ### [Commit #109] docs(readme): update repository overview with microservice architectural diagram
 - **Timestamp:** `2026-11-09T19:22:53.073Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #110] docs(readme): add MongoDB Atlas dual database connection instructions
+- **Timestamp:** `2026-11-09T19:22:53.563Z`
+- **Target:** `D:/Project/zaraz-server`
