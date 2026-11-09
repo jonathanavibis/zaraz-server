@@ -385,3 +385,7 @@
 ### [Commit #91] perf(db): add text index on product title and brand for search acceleration
 - **Timestamp:** `2026-11-09T19:22:44.055Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #92] perf(db): add index on order tracking number for instantaneous lookup
+- **Timestamp:** `2026-11-09T19:22:44.537Z`
+- **Target:** `D:/Project/zaraz-server`
