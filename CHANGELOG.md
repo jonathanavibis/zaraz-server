@@ -145,3 +145,7 @@
 ### [Commit #31] feat(orders): add patch order status endpoint with timeline completion update
 - **Timestamp:** `2026-11-09T19:22:07.699Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #32] feat(orders): implement delivery method calculation for standard and express courier
+- **Timestamp:** `2026-11-09T19:22:08.941Z`
+- **Target:** `D:/Project/zaraz-server`
