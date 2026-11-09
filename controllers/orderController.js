@@ -1,8 +1,49 @@
+import jwt from 'jsonwebtoken';
 import Order from '../models/Order.js';
+import User from '../models/User.js';
 import { renderBaseLayout, isHtmlRequest } from '../utils/viewRenderer.js';
 
 export const createOrder = async (req, res) => {
   try {
+    // 1. Strict Authentication Guard - User must be logged in to Zaraz to place an order
+    let token = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    }
+
+    const isDashboardAdmin = req.headers['x-zaraz-admin-origin'] === 'zaraz-dashboard';
+
+    if (!token && !req.user && !isDashboardAdmin) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication Required: You must be logged in to your Zaraz account to place an order.',
+        requireLogin: true,
+      });
+    }
+
+    let authenticatedUserId = null;
+    let authenticatedUserEmail = null;
+
+    if (token) {
+      try {
+        const secret =
+          process.env.JWT_SECRET || 'zaraz_super_secret_jwt_key_2026_green_black';
+        const decoded = jwt.verify(token, secret);
+        authenticatedUserId = decoded.id || decoded._id;
+        authenticatedUserEmail = decoded.email;
+      } catch (tokenErr) {
+        return res.status(401).json({
+          success: false,
+          message: 'Invalid or expired session token. Please sign in again to place your order.',
+          requireLogin: true,
+        });
+      }
+    } else if (req.user) {
+      authenticatedUserId = req.user._id || req.user.id;
+      authenticatedUserEmail = req.user.email;
+    }
+
     const { customer, items, delivery, payment, pricing } = req.body;
 
     if (!items || items.length === 0) {
@@ -65,9 +106,10 @@ export const createOrder = async (req, res) => {
 
     const order = await Order.create({
       orderNumber,
+      userId: authenticatedUserId,
       customer: {
         name: customer.name,
-        email: customer.email?.toLowerCase(),
+        email: authenticatedUserEmail || customer.email?.toLowerCase(),
         phone: customer.phone,
         address: customer.address,
         city: customer.city || 'Dhaka',
@@ -275,7 +317,10 @@ export const getMyOrders = async (req, res) => {
             try {
               const res = await fetch('/orders', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                  'Content-Type': 'application/json',
+                  'x-zaraz-admin-origin': 'zaraz-dashboard'
+                },
                 body: JSON.stringify(sample)
               });
               const data = await res.json();
