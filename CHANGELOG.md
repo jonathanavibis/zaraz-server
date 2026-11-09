@@ -157,3 +157,7 @@
 ### [Commit #34] feat(telemetry): add server diagnostics endpoint reporting CPU and memory usage
 - **Timestamp:** `2026-11-09T19:22:10.482Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #35] feat(telemetry): compute V8 heap allocation and RSS footprint metrics
+- **Timestamp:** `2026-11-09T19:22:11.087Z`
+- **Target:** `D:/Project/zaraz-server`
