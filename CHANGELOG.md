@@ -277,3 +277,7 @@
 ### [Commit #64] fix(telemetry): guard against missing process.memoryUsage in constrained environments
 - **Timestamp:** `2026-11-09T19:22:29.461Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #65] fix(ui): adjust modal z-index to overlay correctly on top of sticky header
+- **Timestamp:** `2026-11-09T19:22:29.931Z`
+- **Target:** `D:/Project/zaraz-server`
