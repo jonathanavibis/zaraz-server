@@ -229,3 +229,7 @@
 ### [Commit #52] fix(headers): add no-store and no-cache headers to eliminate stale catalog caching
 - **Timestamp:** `2026-11-09T19:22:23.436Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #53] fix(routing): mount dual routes for both /products and /api/products compatibility
+- **Timestamp:** `2026-11-09T19:22:23.915Z`
+- **Target:** `D:/Project/zaraz-server`
