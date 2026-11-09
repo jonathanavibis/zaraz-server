@@ -461,3 +461,7 @@
 ### [Commit #110] docs(readme): add MongoDB Atlas dual database connection instructions
 - **Timestamp:** `2026-11-09T19:22:53.563Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #111] docs(readme): add Vercel serverless deployment and environment variable guide
+- **Timestamp:** `2026-11-09T19:22:54.040Z`
+- **Target:** `D:/Project/zaraz-server`
