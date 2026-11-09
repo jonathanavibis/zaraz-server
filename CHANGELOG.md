@@ -301,3 +301,7 @@
 ### [Commit #70] refactor(db): modularize database connection logic in config/db.js
 - **Timestamp:** `2026-11-09T19:22:32.698Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #71] refactor(db): use separate mongoose connection instances for catalog and auth
+- **Timestamp:** `2026-11-09T19:22:33.546Z`
+- **Target:** `D:/Project/zaraz-server`
