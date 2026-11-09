@@ -61,3 +61,7 @@
 ### [Commit #10] feat(catalog): add product search filter querying title, brand, and description
 - **Timestamp:** `2026-11-09T19:21:53.296Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #11] feat(catalog): implement category filtering by slug with regex matching
+- **Timestamp:** `2026-11-09T19:21:53.777Z`
+- **Target:** `D:/Project/zaraz-server`
