@@ -41,3 +41,7 @@
 ### [Commit #5] feat(auth): add social login OAuth exchange handler for Google and GitHub
 - **Timestamp:** `2026-11-09T19:21:50.788Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #6] feat(auth): validate strong password requirements on registration payload
+- **Timestamp:** `2026-11-09T19:21:51.283Z`
+- **Target:** `D:/Project/zaraz-server`
