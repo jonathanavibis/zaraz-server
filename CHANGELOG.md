@@ -305,3 +305,7 @@
 ### [Commit #71] refactor(db): use separate mongoose connection instances for catalog and auth
 - **Timestamp:** `2026-11-09T19:22:33.546Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #72] refactor(models): define explicit mongoose schema types and defaults for Product
+- **Timestamp:** `2026-11-09T19:22:34.171Z`
+- **Target:** `D:/Project/zaraz-server`
