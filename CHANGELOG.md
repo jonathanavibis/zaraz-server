@@ -481,3 +481,7 @@
 ### [Commit #115] docs(architecture): create database entity relationship overview markdown
 - **Timestamp:** `2026-11-09T19:22:56.024Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #116] docs(architecture): document Express serverless lifecycle on Vercel Edge
+- **Timestamp:** `2026-11-09T19:22:56.505Z`
+- **Target:** `D:/Project/zaraz-server`
