@@ -397,3 +397,7 @@
 ### [Commit #94] perf(db): use lean queries where document mutation is not required
 - **Timestamp:** `2026-11-09T19:22:45.505Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #95] perf(api): set max-age=0 and must-revalidate on all dynamic catalog responses
+- **Timestamp:** `2026-11-09T19:22:45.981Z`
+- **Target:** `D:/Project/zaraz-server`
