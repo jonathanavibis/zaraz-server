@@ -9,3 +9,7 @@
 - Timestamp: 2026-11-10 01:20:28
 
 
+### docs(api): document GET /products/:id response format for single items
+- Timestamp: 2026-11-10 01:20:29
+
+
