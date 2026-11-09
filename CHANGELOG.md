@@ -357,3 +357,7 @@
 ### [Commit #84] refactor(routes): modularize auth routes into dedicated Express Router
 - **Timestamp:** `2026-11-09T19:22:40.252Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #85] refactor(routes): modularize product routes into dedicated Express Router
+- **Timestamp:** `2026-11-09T19:22:40.852Z`
+- **Target:** `D:/Project/zaraz-server`
