@@ -97,3 +97,7 @@
 ### [Commit #19] feat(categories): implement getAllCategories endpoint with alphabetical sort
 - **Timestamp:** `2026-11-09T19:21:58.031Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #20] feat(categories): add live product counter aggregation per category slug
+- **Timestamp:** `2026-11-09T19:21:59.277Z`
+- **Target:** `D:/Project/zaraz-server`
