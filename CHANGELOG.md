@@ -37,3 +37,7 @@
 ### [Commit #4] feat(auth): implement secure customer and seller role discrimination
 - **Timestamp:** `2026-11-09T19:21:50.286Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #5] feat(auth): add social login OAuth exchange handler for Google and GitHub
+- **Timestamp:** `2026-11-09T19:21:50.788Z`
+- **Target:** `D:/Project/zaraz-server`
