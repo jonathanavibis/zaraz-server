@@ -137,3 +137,7 @@
 ### [Commit #29] feat(orders): add customer order history lookup filtered by email address
 - **Timestamp:** `2026-11-09T19:22:06.406Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #30] feat(orders): implement single order tracking endpoint by tracking ID
+- **Timestamp:** `2026-11-09T19:22:06.902Z`
+- **Target:** `D:/Project/zaraz-server`
