@@ -317,3 +317,7 @@
 ### [Commit #74] refactor(models): define explicit mongoose schema types and defaults for User
 - **Timestamp:** `2026-11-09T19:22:35.176Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #75] refactor(models): define explicit mongoose schema types and defaults for Category
+- **Timestamp:** `2026-11-09T19:22:35.674Z`
+- **Target:** `D:/Project/zaraz-server`
