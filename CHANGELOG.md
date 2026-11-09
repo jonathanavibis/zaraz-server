@@ -281,3 +281,7 @@
 ### [Commit #65] fix(ui): adjust modal z-index to overlay correctly on top of sticky header
 - **Timestamp:** `2026-11-09T19:22:29.931Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #66] fix(ui): prevent horizontal scroll overflow on mobile viewport sizes
+- **Timestamp:** `2026-11-09T19:22:30.503Z`
+- **Target:** `D:/Project/zaraz-server`
