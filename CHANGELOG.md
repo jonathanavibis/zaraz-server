@@ -441,3 +441,7 @@
 ### [Commit #105] docs(api): document GET /auth/me bearer token authorization header requirement
 - **Timestamp:** `2026-11-09T19:22:51.154Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #106] docs(api): document POST /orders order creation structure and pricing object
+- **Timestamp:** `2026-11-09T19:22:51.632Z`
+- **Target:** `D:/Project/zaraz-server`
