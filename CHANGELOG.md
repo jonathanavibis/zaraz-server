@@ -293,3 +293,7 @@
 ### [Commit #68] fix(ui): add missing danger button and card style classes to viewRenderer
 - **Timestamp:** `2026-11-09T19:22:31.484Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #69] fix(ui): define --muted CSS variable to prevent fallback styling issues
+- **Timestamp:** `2026-11-09T19:22:31.966Z`
+- **Target:** `D:/Project/zaraz-server`
