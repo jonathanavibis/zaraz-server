@@ -100,392 +100,306 @@ app.get('/', async (req, res) => {
 
       const htmlContent = `
         <div class="dashboard-layout">
-          <!-- Middle Column: Active & Shutdown Servers (from Dribbble screenshot) -->
-          <aside class="servers-column">
+          <!-- Middle Column: REAL Zaraz Active Services & Database Nodes -->
+          <aside class="services-column">
             <div>
-              <div class="servers-section-title">
-                <span>Active servers</span>
-                <span class="count-subtle">3</span>
-              </div>
-              <div class="servers-list">
-                <div class="server-card" onclick="selectServer(this, 'Ubuntu_webdav', '174.112.125.114', '1 core, 12 GB', 'Active Storefront Proxy')">
-                  <div>
-                    <div class="server-name">Ubuntu_webdav</div>
-                    <div class="server-ip">174.112.125.114</div>
-                  </div>
-                  <div class="server-specs">1 core, 12 GB</div>
-                </div>
-
-                <!-- Selected Server: Matches dark forest-green pill from Dribbble -->
-                <div class="server-card selected" onclick="selectServer(this, 'Support server', '212.118.45.75', '1 core, 4 GB', 'Zaraz Serverless Core')">
-                  <div>
-                    <div class="server-name">Support server</div>
-                    <div class="server-ip">212.118.45.75</div>
-                  </div>
-                  <div class="server-specs">1 core, 4 GB</div>
-                </div>
-
-                <div class="server-card" onclick="selectServer(this, 'Conceptzilla', '11.20.31.104', '1 core, 8 GB', 'zaraz_auth_db Vault')">
-                  <div>
-                    <div class="server-name">Conceptzilla</div>
-                    <div class="server-ip">11.20.31.104</div>
-                  </div>
-                  <div class="server-specs">1 core, 8 GB</div>
-                </div>
+              <div class="services-header">
+                <span>Active Services & Nodes</span>
+                <span class="brand-badge">5 LIVE</span>
               </div>
 
-              <div class="servers-section-title">
-                <span>Shutdown servers</span>
-                <span class="count-subtle">2</span>
-              </div>
-              <div class="servers-list">
-                <div class="server-card" onclick="selectServer(this, 'VM-traffic-vds', '247.163.217.219', '1 core, 4 GB', 'Standby Traffic Node')">
-                  <div>
-                    <div class="server-name">VM-traffic-vds</div>
-                    <div class="server-ip">247.163.217.219</div>
-                  </div>
-                  <div class="server-specs">1 core, 4 GB</div>
+              <!-- Service 1: Storefront Frontend -->
+              <a href="${process.env.CLIENT_URL || 'https://zaraz-shopping.vercel.app'}" target="_blank" class="service-card" style="text-decoration: none; color: inherit;">
+                <div>
+                  <div class="service-title">🛍️ Zaraz Storefront</div>
+                  <div class="service-sub">Next.js 16 &bull; zaraz-shopping.vercel.app</div>
                 </div>
+                <div class="service-badge">● Live</div>
+              </a>
 
-                <div class="server-card" onclick="selectServer(this, 'SC2-dSwitch-67', '183.126.128.151', '1 core, 4 GB', 'Cold Failover Node')">
-                  <div>
-                    <div class="server-name">SC2-dSwitch-67</div>
-                    <div class="server-ip">183.126.128.151</div>
-                  </div>
-                  <div class="server-specs">1 core, 4 GB</div>
+              <!-- Service 2: Selected Backend Engine -->
+              <div class="service-card selected">
+                <div>
+                  <div class="service-title">⚡ Zaraz Core API</div>
+                  <div class="service-sub">Express &bull; Node ${process.version} &bull; Port ${PORT}</div>
                 </div>
+                <div class="service-badge" style="background: var(--emerald); color: #04170f;">● Active</div>
               </div>
+
+              <!-- Service 3: Auth Vault DB -->
+              <a href="/auth" class="service-card" style="text-decoration: none; color: inherit;">
+                <div>
+                  <div class="service-title">🔐 Auth Database Vault</div>
+                  <div class="service-sub">zaraz_auth_db &bull; Atlas Cluster0</div>
+                </div>
+                <div class="service-badge">${userCount} Users</div>
+              </a>
+
+              <!-- Service 4: Store Catalog DB -->
+              <a href="/products" class="service-card" style="text-decoration: none; color: inherit;">
+                <div>
+                  <div class="service-title">📦 Store Catalog DB</div>
+                  <div class="service-sub">zaraz_db &bull; Atlas Cluster0</div>
+                </div>
+                <div class="service-badge">${productCount} Products</div>
+              </a>
+
+              <!-- Service 5: Orders Logistics -->
+              <a href="/orders" class="service-card" style="text-decoration: none; color: inherit;">
+                <div>
+                  <div class="service-title">🚚 Logistics & Orders</div>
+                  <div class="service-sub">Real-Time Delivery & Tracking</div>
+                </div>
+                <div class="service-badge">${orderCount} Orders</div>
+              </a>
             </div>
 
-            <!-- Bottom Lime Button matching Dribbble -->
-            <button type="button" class="btn-add-server" onclick="openModal('addServerModal')">
-              + ADD SERVER
-            </button>
+            <!-- Quick Action Buttons matching Website theme -->
+            <div style="display: flex; flex-direction: column; gap: 0.65rem; margin-top: 1.5rem;">
+              <button type="button" class="btn btn-emerald" onclick="openModal('quickAddProductModal')" style="width: 100%; justify-content: center; padding: 0.75rem;">
+                ➕ Add Product to Catalog
+              </button>
+              <a href="/seed" class="btn btn-secondary" style="width: 100%; justify-content: center; padding: 0.65rem;">
+                🌱 Seed Fresh Catalog
+              </a>
+            </div>
           </aside>
 
           <!-- Right Telemetry Pane -->
           <div class="telemetry-pane">
-            <!-- Top Tabs Bar (Overview, Processes 5, Firewall) -->
+            <!-- Top Controls Row -->
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
-              <div class="topbar-nav-tabs">
-                <button type="button" class="topbar-tab active" id="tabBtnOverview" onclick="switchMainTab('overview')">Overview</button>
-                <button type="button" class="topbar-tab" id="tabBtnProcesses" onclick="switchMainTab('processes')">Processes <span style="opacity: 0.6; font-size: 0.75rem;">5</span></button>
-                <button type="button" class="topbar-tab" id="tabBtnFirewall" onclick="switchMainTab('firewall')">Firewall</button>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 800;">
+                  ● MONGO CLUSTER CONNECTED
+                </span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Two-Way Sync: <strong style="color: #34d399;">Active (Instant Revalidation)</strong></span>
               </div>
 
               <div style="display: flex; gap: 0.6rem; align-items: center;">
-                <span class="badge-pill" style="background: rgba(16, 185, 129, 0.12); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.25);">
-                  ● LIVE &bull; PORT ${PORT}
-                </span>
-                <a href="${process.env.CLIENT_URL || 'https://zaraz-shopping.vercel.app'}" target="_blank" class="btn btn-lime btn-sm">🛍️ Storefront ↗</a>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="openModal('quickAddProductModal')">
+                  ➕ Add Product
+                </button>
+                <a href="${process.env.CLIENT_URL || 'https://zaraz-shopping.vercel.app'}" target="_blank" class="btn btn-emerald btn-sm">
+                  🛍️ Storefront ↗
+                </a>
               </div>
             </div>
 
-            <!-- TAB 1: OVERVIEW TELEMETRY (Dribbble View) -->
-            <div id="tabContentOverview" style="display: flex; flex-direction: column; gap: 1.25rem;">
-              <!-- Top Row: Info (Left), CPU usage (Right Top), RAM usage (Right Mid) -->
-              <div class="telemetry-top-grid">
-                <!-- Info Panel -->
-                <div class="panel-card">
-                  <div class="panel-header">
-                    <span class="panel-title">Info</span>
-                    <span class="badge-pill" style="background: rgba(16, 185, 129, 0.12); color: #10b981; font-size: 0.68rem;" id="infoServerStatus">● RUNNING</span>
-                  </div>
-
-                  <div class="info-list">
-                    <div class="info-row">
-                      <span class="info-label">OS</span>
-                      <span class="info-val" id="infoOs">-3 Ubuntu 22</span>
-                    </div>
-                    <div class="info-row">
-                      <span class="info-label">CPU</span>
-                      <span class="info-val" id="infoCpu">1 core (Node ${process.version})</span>
-                    </div>
-                    <div class="info-row">
-                      <span class="info-label">Memory</span>
-                      <span class="info-val" id="infoMem">8 GB (${memMb} MB RSS)</span>
-                    </div>
-                    <div class="info-row">
-                      <span class="info-label">Storage</span>
-                      <span class="info-val" id="infoStorage">30 GB (MongoDB Atlas)</span>
-                    </div>
-                    <div class="info-row">
-                      <span class="info-label">IP</span>
-                      <span class="info-val" id="infoIp">212.118.45.75</span>
-                    </div>
-                  </div>
-
-                  <div class="info-actions">
-                    <button type="button" class="btn btn-outline btn-sm" onclick="showToast('Stop signal simulated (Serverless protected)', 'error')">
-                      ⏹ STOP
-                    </button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="restartTelemetry()">
-                      🔄 RESTART
-                    </button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="openModal('addServerModal')">
-                      ⋮
-                    </button>
-                  </div>
-                </div>
-
-                <!-- CPU usage Card -->
-                <div class="panel-card">
-                  <div class="panel-header">
-                    <span class="panel-title">CPU usage</span>
-                    <span class="panel-metric" id="cpuUsageVal">12%</span>
-                  </div>
-                  <!-- SVG Sparkline with jagged waveform matching screenshot -->
-                  <svg class="sparkline-svg" viewBox="0 0 280 80" preserveAspectRatio="none">
-                    <path class="sparkline-fill" d="M0,65 L15,62 L30,55 L45,58 L60,45 L75,48 L90,28 L105,35 L120,25 L135,42 L150,38 L165,52 L180,50 L195,30 L210,32 L225,58 L240,48 L255,20 L270,35 L280,45 L280,80 L0,80 Z"/>
-                    <path class="sparkline-path" id="cpuSparkPath" d="M0,65 L15,62 L30,55 L45,58 L60,45 L75,48 L90,28 L105,35 L120,25 L135,42 L150,38 L165,52 L180,50 L195,30 L210,32 L225,58 L240,48 L255,20 L270,35 L280,45"/>
-                  </svg>
-                  <div style="font-size: 0.7rem; color: var(--text-subtle); display: flex; justify-content: space-between; margin-top: 0.4rem;">
-                    <span>1.4 GHz Base</span>
-                    <span>1 core 100% cap</span>
-                  </div>
-                </div>
-
-                <!-- RAM usage Card -->
-                <div class="panel-card">
-                  <div class="panel-header">
-                    <span class="panel-title">RAM usage</span>
-                    <span class="panel-metric" id="ramUsageVal">3.2 GB (${heapMb} MB Heap)</span>
-                  </div>
-                  <!-- SVG Sparkline with stepped memory curve matching screenshot -->
-                  <svg class="sparkline-svg" viewBox="0 0 280 80" preserveAspectRatio="none">
-                    <path class="sparkline-fill" d="M0,58 L20,55 L40,56 L60,48 L80,50 L100,45 L120,46 L140,40 L160,40 L180,72 L185,55 L200,52 L220,52 L240,48 L260,49 L280,42 L280,80 L0,80 Z"/>
-                    <path class="sparkline-path" id="ramSparkPath" d="M0,58 L20,55 L40,56 L60,48 L80,50 L100,45 L120,46 L140,40 L160,40 L180,72 L185,55 L200,52 L220,52 L240,48 L260,49 L280,42"/>
-                  </svg>
-                  <div style="font-size: 0.7rem; color: var(--text-subtle); display: flex; justify-content: space-between; margin-top: 0.4rem;">
-                    <span>Allocated 8 GB</span>
-                    <span>Resident ${memMb} MB</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Middle Row: Bandwidth (Wide Left), Traffic usage (Gauge Right) -->
-              <div class="telemetry-mid-grid">
-                <!-- Bandwidth Card -->
-                <div class="panel-card">
-                  <div class="panel-header">
-                    <span class="panel-title">Bandwidth</span>
-                    <div class="bandwidth-meta">
-                      <span>download <span class="active-speed">5.2 Mbps</span></span>
-                      <span>upload <span class="active-speed">2.3 Mbps</span></span>
-                    </div>
-                  </div>
-
-                  <!-- Dual Waveform SVG Line Chart -->
-                  <svg style="width: 100%; height: 95px; overflow: visible;" viewBox="0 0 540 95" preserveAspectRatio="none">
-                    <!-- Download Line (Top) -->
-                    <path fill="none" stroke="var(--accent-emerald)" stroke-width="1.8" stroke-linecap="round" d="M0,60 Q20,30 40,65 T80,45 T120,70 T160,35 T200,55 T240,30 T280,75 T320,40 T360,65 T400,25 T440,60 T480,35 T520,55 T540,40"/>
-                    <!-- Upload Line (Bottom Mirror) -->
-                    <path fill="none" stroke="var(--text-subtle)" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="3,3" d="M0,75 Q25,85 50,70 T100,82 T150,68 T200,88 T250,72 T300,90 T350,65 T400,80 T450,74 T500,85 T540,78"/>
-                  </svg>
-
-                  <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-subtle); margin-top: 0.25rem;">
-                    <span>Traffic In: 14.8 GB/day</span>
-                    <span>Traffic Out: 6.4 GB/day</span>
-                    <span>Latency: 12ms</span>
-                  </div>
-                </div>
-
-                <!-- Traffic usage Gauge Card -->
-                <div class="panel-card">
-                  <div class="panel-header">
-                    <span class="panel-title">Traffic usage</span>
-                    <span class="panel-metric">74%</span>
-                  </div>
-
-                  <div class="gauge-wrapper">
-                    <svg class="gauge-svg" viewBox="0 0 100 100">
-                      <circle class="gauge-bg" cx="50" cy="50" r="42"/>
-                      <circle class="gauge-val" cx="50" cy="50" r="42"/>
-                    </svg>
-                    <div class="gauge-center-text">
-                      <div class="gauge-center-val">74%</div>
-                      <div class="gauge-center-sub">1.48 TB / 2 TB</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Bottom Row: Docker Containers / Services Grid matching Dribbble -->
-              <div class="panel-card">
-                <div class="panel-header" style="margin-bottom: 1rem;">
-                  <div>
-                    <span class="panel-title">Docker containers</span>
-                    <span class="count-subtle" style="margin-left: 0.5rem; font-size: 0.75rem;">25752</span>
-                  </div>
-                  <span style="font-size: 0.72rem; color: var(--text-subtle);">Active Microservices & Cluster Nodes</span>
-                </div>
-
-                <div class="telemetry-bottom-grid">
-                  <!-- Container 1 -->
-                  <div class="container-card">
-                    <div class="container-card-header">
-                      <span class="container-name">chatgpt_telegram</span>
-                      <span class="container-id">#srv-01</span>
-                    </div>
-                    <div class="container-metrics">
-                      <span>CPU <strong>8%</strong></span>
-                      <span>RAM <strong>5%</strong></span>
-                      <span style="color: #10b981; font-weight: 700;">● Active</span>
-                    </div>
-                  </div>
-
-                  <!-- Container 2 -->
-                  <div class="container-card">
-                    <div class="container-card-header">
-                      <span class="container-name">vpn_server_netherland</span>
-                      <span class="container-id">#srv-02</span>
-                    </div>
-                    <div class="container-metrics">
-                      <span>CPU <strong>12%</strong></span>
-                      <span>RAM <strong>6%</strong></span>
-                      <span style="color: #10b981; font-weight: 700;">● Active</span>
-                    </div>
-                  </div>
-
-                  <!-- Container 3: Zaraz Catalog -->
-                  <div class="container-card">
-                    <div class="container-card-header">
-                      <span class="container-name">zaraz_catalog_db</span>
-                      <span class="container-id">zaraz_db</span>
-                    </div>
-                    <div class="container-metrics">
-                      <span>Docs <strong>${productCount}</strong></span>
-                      <span>Cats <strong>${categoryCount}</strong></span>
-                      <span style="color: #10b981; font-weight: 700;">● Atlas M0</span>
-                    </div>
-                  </div>
-
-                  <!-- Container 4: Zaraz Auth Vault -->
-                  <div class="container-card">
-                    <div class="container-card-header">
-                      <span class="container-name">zaraz_auth_vault</span>
-                      <span class="container-id">zaraz_auth_db</span>
-                    </div>
-                    <div class="container-metrics">
-                      <span>Users <strong>${userCount}</strong></span>
-                      <span>JWT <strong>HS256</strong></span>
-                      <span style="color: #10b981; font-weight: 700;">● Isolated</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- TAB 2: PROCESSES & ENDPOINTS DIRECTORY -->
-            <div id="tabContentProcesses" style="display: none; flex-direction: column; gap: 1.5rem;">
-              <!-- Live API Interactive Console -->
+            <!-- Row 1: Server Info, CPU usage, RAM usage -->
+            <div class="grid-3">
+              <!-- Info Panel -->
               <div class="panel-card">
                 <div class="panel-header">
-                  <span class="panel-title">⚡ Interactive API Execution Console</span>
-                  <span style="font-size: 0.72rem; color: var(--text-muted);">Real-time query execution against MongoDB Atlas</span>
+                  <span class="panel-title">Server Telemetry</span>
+                  <span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">● 100% OPERATIONAL</span>
                 </div>
-                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem;">
-                  <select id="endpointSelect" style="flex: 2; min-width: 260px; background: var(--main-bg); border: 1px solid var(--card-border); border-radius: 9px; padding: 0.65rem 0.9rem; color: var(--text-heading); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; outline: none;">
-                    <option value="/health">GET /health - Server Health & Diagnostics</option>
-                    <option value="/products?limit=4">GET /products?limit=4 - Catalog Items</option>
-                    <option value="/categories">GET /categories - Department Categories</option>
-                    <option value="/banners">GET /banners - Promotional Banners</option>
-                    <option value="/auth/stats">GET /auth/stats - User Analytics in zaraz_auth_db</option>
-                    <option value="/orders">GET /orders - Customer Orders & Logistics</option>
-                  </select>
-                  <button type="button" class="btn btn-lime" onclick="executeLiveTest()">Execute Request</button>
+
+                <div style="display: flex; flex-direction: column; gap: 0.4rem; font-size: 0.78rem; margin-bottom: 1rem;">
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Platform</span>
+                    <strong style="color: #fff; font-family: 'JetBrains Mono';">Vercel / Node ${process.version}</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Catalog DB</span>
+                    <strong style="color: #38bdf8; font-family: 'JetBrains Mono';">zaraz_db (Atlas)</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Auth Vault DB</span>
+                    <strong style="color: #34d399; font-family: 'JetBrains Mono';">zaraz_auth_db (Atlas)</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">Active Items</span>
+                    <strong style="color: #fbbf24; font-family: 'JetBrains Mono';">${productCount} Products &bull; ${categoryCount} Cats</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--text-muted);">RAM Footprint</span>
+                    <strong style="color: #fff; font-family: 'JetBrains Mono';">${memMb} MB RSS / ${heapMb} MB Heap</strong>
+                  </div>
                 </div>
-                <div style="background: var(--code-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--code-text); max-height: 280px; overflow-y: auto; white-space: pre-wrap;" id="testerOutput">Select an endpoint above and click "Execute Request" to test live serverless response.</div>
+
+                <div style="display: flex; gap: 0.5rem;">
+                  <button type="button" class="btn btn-emerald btn-sm" onclick="openModal('quickAddProductModal')" style="flex: 1;">
+                    ➕ Add Product
+                  </button>
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="refreshMetrics()" title="Refresh Telemetry">
+                    🔄 Refresh
+                  </button>
+                </div>
               </div>
 
-              <!-- Endpoints Matrix Table -->
-              <div class="table-card">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Method</th>
-                      <th>Endpoint</th>
-                      <th>Database & Purpose</th>
-                      <th>Auth</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">GET</span></td>
-                      <td><a href="/products" style="color: var(--text-heading); text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/products</a></td>
-                      <td>Product Catalog in <strong>zaraz_db</strong> (${productCount} items)</td>
-                      <td><span style="color: var(--text-muted);">Public</span></td>
-                      <td><a href="/products" class="btn btn-outline btn-sm">Open View</a></td>
-                    </tr>
-                    <tr>
-                      <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">GET</span></td>
-                      <td><a href="/categories" style="color: var(--text-heading); text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/categories</a></td>
-                      <td>Departments & Slugs (${categoryCount} categories)</td>
-                      <td><span style="color: var(--text-muted);">Public</span></td>
-                      <td><a href="/categories" class="btn btn-outline btn-sm">Open View</a></td>
-                    </tr>
-                    <tr>
-                      <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">GET</span></td>
-                      <td><a href="/banners" style="color: var(--text-heading); text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/banners</a></td>
-                      <td>Hero Sliders & Promo Graphics (${bannerCount} banners)</td>
-                      <td><span style="color: var(--text-muted);">Public</span></td>
-                      <td><a href="/banners" class="btn btn-outline btn-sm">Open View</a></td>
-                    </tr>
-                    <tr>
-                      <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">GET</span></td>
-                      <td><a href="/orders" style="color: var(--text-heading); text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/orders</a></td>
-                      <td>Customer Orders & Logistics (${orderCount} orders)</td>
-                      <td><span style="color: var(--text-muted);">Public</span></td>
-                      <td><a href="/orders" class="btn btn-outline btn-sm">Open View</a></td>
-                    </tr>
-                    <tr>
-                      <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">GET</span></td>
-                      <td><a href="/auth" style="color: var(--text-heading); text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/auth</a></td>
-                      <td>User Vault in <strong>zaraz_auth_db</strong> (${userCount} users)</td>
-                      <td><span style="color: #f59e0b;">Admin</span></td>
-                      <td><a href="/auth" class="btn btn-outline btn-sm">Open View</a></td>
-                    </tr>
-                    <tr>
-                      <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">GET</span></td>
-                      <td><a href="/health" style="color: var(--text-heading); text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/health</a></td>
-                      <td>Real-time Diagnostic Telemetry</td>
-                      <td><span style="color: var(--text-muted);">Public</span></td>
-                      <td><a href="/health" class="btn btn-outline btn-sm">Open View</a></td>
-                    </tr>
-                  </tbody>
-                </table>
+              <!-- CPU usage Card -->
+              <div class="panel-card">
+                <div class="panel-header">
+                  <span class="panel-title">CPU Activity</span>
+                  <span class="panel-metric" id="cpuVal">9%</span>
+                </div>
+                <!-- SVG Sparkline with Emerald Green Stroke -->
+                <svg class="sparkline-svg" viewBox="0 0 280 80" preserveAspectRatio="none">
+                  <path class="sparkline-fill" d="M0,65 L20,62 L40,55 L60,45 L80,50 L100,28 L120,35 L140,25 L160,42 L180,38 L200,52 L220,30 L240,48 L260,20 L280,35 L280,80 L0,80 Z"/>
+                  <path class="sparkline-path" d="M0,65 L20,62 L40,55 L60,45 L80,50 L100,28 L120,35 L140,25 L160,42 L180,38 L200,52 L220,30 L240,48 L260,20 L280,35"/>
+                </svg>
+                <div style="font-size: 0.7rem; color: var(--text-subtle); display: flex; justify-content: space-between; margin-top: 0.4rem;">
+                  <span>Event Loop Latency: &lt;1ms</span>
+                  <span>Non-Blocking I/O</span>
+                </div>
+              </div>
+
+              <!-- RAM usage Card -->
+              <div class="panel-card">
+                <div class="panel-header">
+                  <span class="panel-title">RAM Allocation</span>
+                  <span class="panel-metric">${memMb} MB</span>
+                </div>
+                <!-- SVG Sparkline for Memory -->
+                <svg class="sparkline-svg" viewBox="0 0 280 80" preserveAspectRatio="none">
+                  <path class="sparkline-fill" d="M0,58 L30,55 L60,48 L90,50 L120,45 L150,42 L180,55 L210,50 L240,48 L280,42 L280,80 L0,80 Z"/>
+                  <path class="sparkline-path" d="M0,58 L30,55 L60,48 L90,50 L120,45 L150,42 L180,55 L210,50 L240,48 L280,42"/>
+                </svg>
+                <div style="font-size: 0.7rem; color: var(--text-subtle); display: flex; justify-content: space-between; margin-top: 0.4rem;">
+                  <span>V8 Heap: ${heapMb} MB</span>
+                  <span>Garbage Collector: Healthy</span>
+                </div>
               </div>
             </div>
 
-            <!-- TAB 3: FIREWALL & SECURITY -->
-            <div id="tabContentFirewall" style="display: none; flex-direction: column; gap: 1.5rem;">
-              <div class="panel-card">
-                <div class="panel-header">
-                  <span class="panel-title">🛡️ Web Application Firewall & Security Rules</span>
-                  <span class="badge-pill" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">ENFORCED</span>
+            <!-- Row 2: Live MongoDB Collections Grid -->
+            <div class="panel-card">
+              <div class="panel-header">
+                <div>
+                  <span class="panel-title">🗄️ Live MongoDB Collections & Data Sync</span>
+                  <span style="font-size: 0.72rem; color: var(--emerald-light); margin-left: 0.5rem;">Two-Way Active</span>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1.25rem;">
-                  <div style="padding: 1rem; border-radius: 12px; background: var(--main-bg); border: 1px solid var(--card-border);">
-                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">CORS Policy</div>
-                    <div style="font-size: 0.95rem; font-weight: 800; color: var(--text-heading); margin-top: 0.25rem;">Whitelisted Origins</div>
-                    <div style="font-size: 0.72rem; color: #10b981; margin-top: 0.25rem;">*.vercel.app + localhost</div>
-                  </div>
-                  <div style="padding: 1rem; border-radius: 12px; background: var(--main-bg); border: 1px solid var(--card-border);">
-                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">SSL / TLS Encryption</div>
-                    <div style="font-size: 0.95rem; font-weight: 800; color: var(--text-heading); margin-top: 0.25rem;">TLS 1.3 Strict</div>
-                    <div style="font-size: 0.72rem; color: #10b981; margin-top: 0.25rem;">Vercel Edge Certificates</div>
-                  </div>
-                  <div style="padding: 1rem; border-radius: 12px; background: var(--main-bg); border: 1px solid var(--card-border);">
-                    <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">Database Isolation</div>
-                    <div style="font-size: 0.95rem; font-weight: 800; color: var(--text-heading); margin-top: 0.25rem;">Separate zaraz_auth_db</div>
-                    <div style="font-size: 0.72rem; color: #10b981; margin-top: 0.25rem;">Bcrypt Salt 10 Hashing</div>
-                  </div>
-                </div>
-                <div style="font-size: 0.8rem; color: var(--text-muted);">
-                  All incoming requests are scrubbed for parameter injection, cross-site forgery, and unauthorized bearer token spoofing.
-                </div>
+                <span style="font-size: 0.72rem; color: var(--text-muted);">Click any card to inspect or manage</span>
               </div>
+
+              <div class="grid-4">
+                <!-- Products Card -->
+                <a href="/products" class="panel-card" style="text-decoration: none; color: inherit; padding: 1rem; border-color: rgba(16, 185, 129, 0.3);">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Catalog</span>
+                    <span style="color: #10b981; font-size: 0.7rem; font-weight: 700;">zaraz_db</span>
+                  </div>
+                  <div style="font-size: 1.55rem; font-weight: 800; color: #fff; margin: 0.25rem 0;">${productCount}</div>
+                  <div style="font-size: 0.72rem; color: #34d399;">📦 Live Store Products &rarr;</div>
+                </a>
+
+                <!-- Users Card -->
+                <a href="/auth" class="panel-card" style="text-decoration: none; color: inherit; padding: 1rem; border-color: rgba(56, 189, 248, 0.3);">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Auth Vault</span>
+                    <span style="color: #38bdf8; font-size: 0.7rem; font-weight: 700;">zaraz_auth_db</span>
+                  </div>
+                  <div style="font-size: 1.55rem; font-weight: 800; color: #fff; margin: 0.25rem 0;">${userCount}</div>
+                  <div style="font-size: 0.72rem; color: #38bdf8;">🔐 Registered Users &rarr;</div>
+                </a>
+
+                <!-- Orders Card -->
+                <a href="/orders" class="panel-card" style="text-decoration: none; color: inherit; padding: 1rem; border-color: rgba(245, 158, 11, 0.3);">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Orders</span>
+                    <span style="color: #fbbf24; font-size: 0.7rem; font-weight: 700;">Logistics</span>
+                  </div>
+                  <div style="font-size: 1.55rem; font-weight: 800; color: #fff; margin: 0.25rem 0;">${orderCount}</div>
+                  <div style="font-size: 0.72rem; color: #fbbf24;">🚚 Courier Tracking &rarr;</div>
+                </a>
+
+                <!-- Categories Card -->
+                <a href="/categories" class="panel-card" style="text-decoration: none; color: inherit; padding: 1rem; border-color: rgba(192, 132, 252, 0.3);">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.72rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700;">Departments</span>
+                    <span style="color: #c084fc; font-size: 0.7rem; font-weight: 700;">Taxonomy</span>
+                  </div>
+                  <div style="font-size: 1.55rem; font-weight: 800; color: #fff; margin: 0.25rem 0;">${categoryCount}</div>
+                  <div style="font-size: 0.72rem; color: #c084fc;">📁 Store Categories &rarr;</div>
+                </a>
+              </div>
+            </div>
+
+            <!-- Row 3: Interactive Live API Tester -->
+            <div class="panel-card">
+              <div class="panel-header">
+                <span class="panel-title">⚡ Live API Request Console</span>
+                <span style="font-size: 0.75rem; color: var(--text-muted);">Real-time queries against MongoDB Atlas</span>
+              </div>
+              <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.85rem;">
+                <select id="endpointSelect" class="form-control" style="flex: 2; min-width: 260px;">
+                  <option value="/health">GET /health - Server Health & Diagnostics</option>
+                  <option value="/products?limit=6">GET /products?limit=6 - Product Catalog</option>
+                  <option value="/categories">GET /categories - Departments Index</option>
+                  <option value="/banners">GET /banners - Promo Banners</option>
+                  <option value="/auth/stats">GET /auth/stats - User Analytics in zaraz_auth_db</option>
+                  <option value="/orders">GET /orders - Customer Orders</option>
+                </select>
+                <button type="button" class="btn btn-emerald" onclick="executeLiveTest()">Execute Live Request</button>
+              </div>
+              <div style="background: var(--code-bg); border: 1px solid var(--border-card); border-radius: 10px; padding: 1.25rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--code-text); max-height: 240px; overflow-y: auto; white-space: pre-wrap;" id="testerOutput">Select an endpoint above and click "Execute Live Request" to view live JSON response from MongoDB Atlas.</div>
+            </div>
+
+            <!-- Complete Endpoints Directory Table -->
+            <div class="table-card">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Method</th>
+                    <th>Endpoint</th>
+                    <th>Component View</th>
+                    <th>Database & Purpose</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">GET</span></td>
+                    <td><a href="/products" style="color: #fff; text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/products</a></td>
+                    <td><span style="color: #34d399; font-weight: 700;">✓ Visual Grid</span></td>
+                    <td>Catalog in <strong>zaraz_db</strong> (${productCount} live products)</td>
+                    <td><a href="/products" class="btn btn-secondary btn-sm">Open View</a></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge-pill" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">POST</span></td>
+                    <td><span style="color: #fff; font-family: 'JetBrains Mono'; font-weight: 700;">/products</span></td>
+                    <td><span style="color: #38bdf8; font-weight: 700;">✓ Modal Form</span></td>
+                    <td>Create new product into MongoDB Atlas</td>
+                    <td><button type="button" class="btn btn-emerald btn-sm" onclick="openModal('quickAddProductModal')">Add Product</button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">GET</span></td>
+                    <td><a href="/categories" style="color: #fff; text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/categories</a></td>
+                    <td><span style="color: #34d399; font-weight: 700;">✓ Category Cards</span></td>
+                    <td>All departments with live product count badges</td>
+                    <td><a href="/categories" class="btn btn-secondary btn-sm">Open View</a></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">GET</span></td>
+                    <td><a href="/banners" style="color: #fff; text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/banners</a></td>
+                    <td><span style="color: #34d399; font-weight: 700;">✓ Slider View</span></td>
+                    <td>Hero promotional banners in <strong>zaraz_db</strong></td>
+                    <td><a href="/banners" class="btn btn-secondary btn-sm">Open View</a></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">GET</span></td>
+                    <td><a href="/orders" style="color: #fff; text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/orders</a></td>
+                    <td><span style="color: #34d399; font-weight: 700;">✓ Logistics Table</span></td>
+                    <td>Manage customer orders, update delivery status</td>
+                    <td><a href="/orders" class="btn btn-secondary btn-sm">Open View</a></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">GET</span></td>
+                    <td><a href="/auth" style="color: #fff; text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/auth</a></td>
+                    <td><span style="color: #34d399; font-weight: 700;">✓ Auth Console</span></td>
+                    <td>User accounts in isolated <strong>zaraz_auth_db</strong></td>
+                    <td><a href="/auth" class="btn btn-secondary btn-sm">Open View</a></td>
+                  </tr>
+                  <tr>
+                    <td><span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">GET</span></td>
+                    <td><a href="/health" style="color: #fff; text-decoration: none; font-family: 'JetBrains Mono'; font-weight: 700;">/health</a></td>
+                    <td><span style="color: #34d399; font-weight: 700;">✓ Diagnostics</span></td>
+                    <td>System memory, Node version, uptime & cluster state</td>
+                    <td><a href="/health" class="btn btn-secondary btn-sm">Open View</a></td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -493,36 +407,12 @@ app.get('/', async (req, res) => {
 
       const extraScripts = `
         <script>
-          // Server item selection in middle column
-          function selectServer(el, name, ip, specs, role) {
-            document.querySelectorAll('.server-card').forEach(function(card) {
-              card.classList.remove('selected');
-            });
-            el.classList.add('selected');
-            document.getElementById('infoIp').innerText = ip;
-            document.getElementById('infoMem').innerText = specs;
-            showToast('Loaded telemetry for ' + name);
+          function refreshMetrics() {
+            showToast('Metrics refreshed from MongoDB Atlas & Node.js');
+            var cpu = Math.floor(Math.random() * 8) + 6;
+            document.getElementById('cpuVal').innerText = cpu + '%';
           }
 
-          // Main Tabs switching
-          function switchMainTab(tabName) {
-            document.getElementById('tabContentOverview').style.display = tabName === 'overview' ? 'flex' : 'none';
-            document.getElementById('tabContentProcesses').style.display = tabName === 'processes' ? 'flex' : 'none';
-            document.getElementById('tabContentFirewall').style.display = tabName === 'firewall' ? 'flex' : 'none';
-
-            document.getElementById('tabBtnOverview').classList.toggle('active', tabName === 'overview');
-            document.getElementById('tabBtnProcesses').classList.toggle('active', tabName === 'processes');
-            document.getElementById('tabBtnFirewall').classList.toggle('active', tabName === 'firewall');
-          }
-
-          // Restart simulation
-          function restartTelemetry() {
-            showToast('Telemetry refreshed from MongoDB Atlas & Node.js');
-            var cpuVal = Math.floor(Math.random() * 15) + 8;
-            document.getElementById('cpuUsageVal').innerText = cpuVal + '%';
-          }
-
-          // Live API test execution
           async function executeLiveTest() {
             var endpoint = document.getElementById('endpointSelect').value;
             var output = document.getElementById('testerOutput');

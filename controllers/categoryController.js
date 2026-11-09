@@ -4,6 +4,7 @@ import { renderBaseLayout, isHtmlRequest } from '../utils/viewRenderer.js';
 
 export const getAllCategories = async (req, res) => {
   try {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     const categories = await Category.find({}).sort({ name: 1 });
 
     const wantsHtml = isHtmlRequest(req);

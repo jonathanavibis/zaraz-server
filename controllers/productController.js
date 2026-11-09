@@ -4,6 +4,7 @@ import { renderBaseLayout, isHtmlRequest } from '../utils/viewRenderer.js';
 
 export const getAllProducts = async (req, res) => {
   try {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     const { category, search, flashSale, sort, brand, minPrice, maxPrice, limit = 50, page = 1 } = req.query;
 
     const query = {};
@@ -311,6 +312,7 @@ export const getAllProducts = async (req, res) => {
 
 export const getProductById = async (req, res) => {
   try {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     const { id } = req.params;
     let product;
 

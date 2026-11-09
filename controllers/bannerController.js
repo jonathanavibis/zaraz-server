@@ -3,6 +3,7 @@ import { renderBaseLayout, isHtmlRequest } from '../utils/viewRenderer.js';
 
 export const getAllBanners = async (req, res) => {
   try {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     const banners = await Banner.find({}).sort({ createdAt: -1 });
 
     const wantsHtml = isHtmlRequest(req);
