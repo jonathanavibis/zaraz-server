@@ -17,3 +17,7 @@
 - Timestamp: 2026-11-10 01:20:29
 
 
+### docs(api): document POST /auth/login credentials format and error codes
+- Timestamp: 2026-11-10 01:20:30
+
+
