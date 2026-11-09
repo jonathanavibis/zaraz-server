@@ -413,3 +413,7 @@
 ### [Commit #98] perf(memory): minimize object allocations in high-frequency health ping handler
 - **Timestamp:** `2026-11-09T19:22:47.418Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #99] perf(telemetry): throttle simulated CPU pulse interval to prevent event loop delay
+- **Timestamp:** `2026-11-09T19:22:47.895Z`
+- **Target:** `D:/Project/zaraz-server`
