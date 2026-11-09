@@ -101,3 +101,7 @@
 ### [Commit #20] feat(categories): add live product counter aggregation per category slug
 - **Timestamp:** `2026-11-09T19:21:59.277Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #21] feat(categories): implement category creation controller with auto-slug generation
+- **Timestamp:** `2026-11-09T19:22:00.566Z`
+- **Target:** `D:/Project/zaraz-server`
