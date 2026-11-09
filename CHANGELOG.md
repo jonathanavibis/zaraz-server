@@ -69,3 +69,7 @@
 ### [Commit #12] feat(catalog): add price range query parameters for catalog search
 - **Timestamp:** `2026-11-09T19:21:54.245Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #13] feat(catalog): implement flash sale toggle filter in productController
+- **Timestamp:** `2026-11-09T19:21:54.725Z`
+- **Target:** `D:/Project/zaraz-server`
