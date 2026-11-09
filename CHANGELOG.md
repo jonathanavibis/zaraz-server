@@ -429,3 +429,7 @@
 ### [Commit #102] docs(api): document GET /products/:id response format for single items
 - **Timestamp:** `2026-11-09T19:22:49.493Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #103] docs(api): document POST /auth/register request payload and token response
+- **Timestamp:** `2026-11-09T19:22:49.959Z`
+- **Target:** `D:/Project/zaraz-server`
