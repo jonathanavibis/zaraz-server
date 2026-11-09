@@ -325,3 +325,7 @@
 ### [Commit #76] refactor(models): define explicit mongoose schema types and defaults for Banner
 - **Timestamp:** `2026-11-09T19:22:36.172Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #77] refactor(controllers): extract isHtmlRequest detection helper into viewRenderer
+- **Timestamp:** `2026-11-09T19:22:36.685Z`
+- **Target:** `D:/Project/zaraz-server`
