@@ -73,3 +73,7 @@
 ### [Commit #13] feat(catalog): implement flash sale toggle filter in productController
 - **Timestamp:** `2026-11-09T19:21:54.725Z`
 - **Target:** `D:/Project/zaraz-server`
+
+### [Commit #14] feat(catalog): add getProductById with support for both ObjectId and slug
+- **Timestamp:** `2026-11-09T19:21:55.212Z`
+- **Target:** `D:/Project/zaraz-server`
