@@ -12,7 +12,7 @@ export const createOrder = async (req, res) => {
       token = authHeader.split(' ')[1];
     }
 
-    const isDashboardAdmin = req.headers['x-zaraz-admin-origin'] === 'zaraz-dashboard';
+    const isDashboardAdmin = Boolean(req.serverAccount);
 
     if (!token && !req.user && !isDashboardAdmin) {
       return res.status(401).json({
@@ -318,8 +318,7 @@ export const getMyOrders = async (req, res) => {
               const res = await fetch('/orders', {
                 method: 'POST',
                 headers: {
-                  'Content-Type': 'application/json',
-                  'x-zaraz-admin-origin': 'zaraz-dashboard'
+                  'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(sample)
               });

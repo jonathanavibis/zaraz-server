@@ -469,71 +469,25 @@ export const getAuthOverview = async (req, res) => {
           </div>
         </div>
 
-        <!-- Interactive Auth Test Console -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2.5rem;">
-          <!-- Register Tester -->
-          <div class="card">
-            <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem;">📝 Test User Sign-Up (POST /auth/register)</h3>
-            <p style="font-size: 0.78rem; color: var(--muted); margin-bottom: 1.25rem;">Validates 6+ characters, 1 uppercase, 1 lowercase letter.</p>
-            <form onsubmit="handleTestRegister(event)">
-              <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" id="regName" required class="form-control" placeholder="e.g. Asif Mahmud" />
-              </div>
-              <div class="form-group">
-                <label>Email Address</label>
-                <input type="email" id="regEmail" required class="form-control" placeholder="asif@zaraz.com" />
-              </div>
-              <div class="form-group">
-                <label>Password (Must have uppercase & lowercase)</label>
-                <input type="password" id="regPass" required class="form-control" placeholder="SecurePass2026" />
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Role</label>
-                  <select id="regRole" class="form-control">
-                    <option value="customer">Customer</option>
-                    <option value="seller">Seller</option>
-                    <option value="admin">Admin</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label>Phone</label>
-                  <input type="text" id="regPhone" class="form-control" placeholder="017xxxxxxxx" />
-                </div>
-              </div>
-              <button type="submit" class="btn btn-emerald" style="width: 100%;">Create Account in zaraz_auth_db</button>
-            </form>
-            <div id="regResult" style="margin-top: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #34d399; max-height: 120px; overflow-y: auto; white-space: pre-wrap;"></div>
-          </div>
-
-          <!-- Login Tester -->
-          <div class="card">
-            <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 0.5rem;">🔑 Test User Login & JWT (POST /auth/login)</h3>
-            <p style="font-size: 0.78rem; color: var(--muted); margin-bottom: 1.25rem;">Verifies bcrypt password and generates a signed 30-day JWT token.</p>
-            <form onsubmit="handleTestLogin(event)">
-              <div class="form-group">
-                <label>Email Address</label>
-                <input type="email" id="logEmail" required class="form-control" value="user@zaraz.com" />
-              </div>
-              <div class="form-group">
-                <label>Password</label>
-                <input type="password" id="logPass" required class="form-control" value="Password123" />
-              </div>
-              <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                <button type="button" onclick="setDemoCredentials('user@zaraz.com', 'Password123')" class="btn btn-secondary btn-sm" style="flex: 1;">Customer Demo</button>
-                <button type="button" onclick="setDemoCredentials('admin@zaraz.com', 'AdminPassword123')" class="btn btn-secondary btn-sm" style="flex: 1;">Admin Demo</button>
-                <button type="button" onclick="setDemoCredentials('seller@zaraz.com', 'SellerPassword123')" class="btn btn-secondary btn-sm" style="flex: 1;">Seller Demo</button>
-              </div>
-              <button type="submit" class="btn btn-emerald" style="width: 100%;">Sign In & Generate JWT</button>
-            </form>
-            <div id="logResult" style="margin-top: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #34d399; max-height: 120px; overflow-y: auto; white-space: pre-wrap;"></div>
+        <!-- SERVER_ACC Isolated Vault Notice (Login-Only Gateway) -->
+        <div class="card" style="margin-bottom: 2rem; border-color: rgba(16, 185, 129, 0.35);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h3 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin-bottom: 0.35rem;">
+                🛡️ Backend Server Gateway: Isolated Vault (<code>SERVER_ACC.accounts</code>)
+              </h3>
+              <p style="font-size: 0.8rem; color: var(--muted);">
+                Active operator: <strong style="color: #34d399;">${req.serverAccount?.id || 'Authenticated'}</strong>.
+                Backend dashboard accounts are created directly inside MongoDB Atlas (<code>SERVER_ACC.accounts</code>) — self sign-up &amp; demo logins are disabled.
+              </p>
+            </div>
+            <a href="/logout" class="btn btn-danger btn-sm">🔒 Lock &amp; Logout</a>
           </div>
         </div>
 
         <!-- Users Table Card Component -->
         <div class="section-title" style="margin-bottom: 1rem;">
-          <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff;">Registered Users Directory (MongoDB Atlas: <code>zaraz_auth_db.users</code>)</h3>
+          <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff;">Storefront Users Directory (MongoDB Atlas: <code>zaraz_auth_db.users</code>)</h3>
         </div>
         <div class="table-card">
           <table>
@@ -554,70 +508,7 @@ export const getAuthOverview = async (req, res) => {
         </div>
       `;
 
-      const extraScripts = `
-        <script>
-          function setDemoCredentials(email, pass) {
-            document.getElementById('logEmail').value = email;
-            document.getElementById('logPass').value = pass;
-          }
-
-          async function handleTestRegister(e) {
-            e.preventDefault();
-            const payload = {
-              name: document.getElementById('regName').value,
-              email: document.getElementById('regEmail').value,
-              password: document.getElementById('regPass').value,
-              role: document.getElementById('regRole').value,
-              phone: document.getElementById('regPhone').value
-            };
-            const resultBox = document.getElementById('regResult');
-            resultBox.innerText = 'Sending register request...';
-            try {
-              const res = await fetch('/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-              });
-              const data = await res.json();
-              resultBox.innerText = 'STATUS: ' + res.status + '\\n' + JSON.stringify(data, null, 2);
-              if (data.success) {
-                showToast('User created in zaraz_auth_db!');
-                setTimeout(() => window.location.reload(), 1200);
-              } else {
-                showToast(data.message, 'error');
-              }
-            } catch (err) {
-              resultBox.innerText = 'ERROR: ' + err.message;
-            }
-          }
-
-          async function handleTestLogin(e) {
-            e.preventDefault();
-            const payload = {
-              email: document.getElementById('logEmail').value,
-              password: document.getElementById('logPass').value
-            };
-            const resultBox = document.getElementById('logResult');
-            resultBox.innerText = 'Authenticating with zaraz_auth_db...';
-            try {
-              const res = await fetch('/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-              });
-              const data = await res.json();
-              resultBox.innerText = 'STATUS: ' + res.status + '\\n' + JSON.stringify(data, null, 2);
-              if (data.success) {
-                showToast('Login successful! JWT token generated.');
-              } else {
-                showToast(data.message, 'error');
-              }
-            } catch (err) {
-              resultBox.innerText = 'ERROR: ' + err.message;
-            }
-          }
-        </script>
-      `;
+      const extraScripts = ``;
 
       return res.status(200).send(renderBaseLayout({
         title: 'Auth & Users Component',

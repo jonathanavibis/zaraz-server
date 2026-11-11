@@ -2,6 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import connectDB, { getAuthDb } from './config/db.js';
+import { initServerAccVault } from './SERVER_ACC/serverAccDb.js';
+import serverAuthRoutes from './SERVER_ACC/serverAuthRoutes.js';
+import {
+  attachServerSession,
+  protectBackendGateway,
+} from './SERVER_ACC/serverAuthMiddleware.js';
 import productRoutes from './routes/productRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import bannerRoutes from './routes/bannerRoutes.js';
@@ -19,8 +25,8 @@ import User from './models/User.js';
 
 dotenv.config();
 
-// Attempt immediate connection for local servers
-connectDB().catch((err) => console.error('[Init DB error]:', err.message));
+// Attempt immediate connection for local servers and initialize SERVER_ACC vault
+initServerAccVault().catch((err) => console.error('[Init DB error]:', err.message));
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -54,16 +60,25 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serverless DB connection middleware: ensures MongoDB is connected before handling routes
+// Serverless DB connection middleware: ensures MongoDB & SERVER_ACC vault are connected
 app.use(async (req, res, next) => {
   try {
-    await connectDB();
+    await initServerAccVault();
     next();
   } catch (dbErr) {
     console.error('[DB Middleware Error]:', dbErr.message);
     next();
   }
 });
+
+// Resolve SERVER_ACC session cookie and attach AsyncLocalStorage context
+app.use(attachServerSession);
+
+// Isolated Backend Login-Only Routes (SERVER_ACC folder module)
+app.use('/', serverAuthRoutes);
+
+// Protect all Backend HTML Dashboard views & admin mutations behind SERVER_ACC login
+app.use(protectBackendGateway);
 
 // Direct top-level /jwt endpoint for token issuance (mirrors /auth/jwt)
 app.post(['/jwt', '/api/jwt'], issueJwt);
@@ -590,13 +605,27 @@ app.get('/', async (req, res) => {
       }));
     }
 
-    // Default JSON response for curl/Postman/API fetchers
+    // Unauthenticated API pings receive minimal service status without exposing internal metrics
+    if (!req.serverAccount) {
+      return res.status(200).json({
+        success: true,
+        service: 'Zaraz E-Commerce API Server (Daraz Inspired Green & Black Edition)',
+        version: '1.0.0',
+        dashboardProtected: true,
+        serverVault: 'SERVER_ACC.accounts (Login Only)',
+        loginUrl: '/login',
+      });
+    }
+
+    // Authenticated JSON telemetry response
     res.status(200).json({
       success: true,
       service: 'Zaraz E-Commerce API Server (Daraz Inspired Green & Black Edition)',
       version: '1.0.0',
+      serverOperator: req.serverAccount,
       database: {
         status: 'Connected to MongoDB Atlas',
+        serverAccVault: 'SERVER_ACC.accounts',
         authDatabase: 'zaraz_auth_db',
         storeDatabase: 'zaraz_db',
       },

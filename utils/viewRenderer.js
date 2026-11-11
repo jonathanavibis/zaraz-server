@@ -5,6 +5,16 @@
  * Clean Dribbble-inspired server layout with 100% REAL, actionable Zaraz services.
  */
 
+import { getCurrentServerAccount } from '../SERVER_ACC/serverSessionContext.js';
+
+const escapeSafeHtml = (val = '') =>
+  String(val)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 export const isHtmlRequest = (req) => {
   if (req.query.format === 'json') return false;
   if (req.query.format === 'html' || req.query.format === 'component') return true;
@@ -25,8 +35,18 @@ export const renderBaseLayout = ({
   jsonUrl = '?format=json',
   extraHead = '',
   extraScripts = '',
+  serverAccount = null,
 }) => {
   const isDashboard = activeNav === 'dashboard';
+  const activeAccount = serverAccount || getCurrentServerAccount();
+  const displayName = escapeSafeHtml(activeAccount?.name || activeAccount?.id || 'Server Operator');
+  const displayId = escapeSafeHtml(activeAccount?.id || 'SERVER_ACC');
+  const initials = escapeSafeHtml(
+    (activeAccount?.name || activeAccount?.id || 'SA')
+      .trim()
+      .slice(0, 2)
+      .toUpperCase()
+  );
 
   return `<!DOCTYPE html>
 <html lang="en" data-theme="emerald">
@@ -820,6 +840,9 @@ export const renderBaseLayout = ({
       <a href="${process.env.CLIENT_URL || 'https://zaraz-shopping.vercel.app'}" target="_blank" class="btn btn-emerald btn-sm" title="Open Storefront">
         🛍️ Open Storefront ↗
       </a>
+      <a href="/logout" class="btn btn-danger btn-sm" title="Lock & Logout (${displayId})">
+        🔒 Logout
+      </a>
     </div>
   </header>
 
@@ -866,13 +889,18 @@ export const renderBaseLayout = ({
         </nav>
       </div>
 
-      <!-- Profile -->
-      <div class="sidebar-profile">
-        <div class="profile-avatar">ZA</div>
-        <div style="flex: 1; overflow: hidden;">
-          <div class="profile-name">Zaraz Admin</div>
-          <div class="profile-role">● MongoDB Connected</div>
+      <!-- Profile & Logout -->
+      <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+        <div class="sidebar-profile">
+          <div class="profile-avatar">${initials}</div>
+          <div style="flex: 1; overflow: hidden;">
+            <div class="profile-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${displayName}</div>
+            <div class="profile-role">● SERVER_ACC Verified</div>
+          </div>
         </div>
+        <a href="/logout" class="btn btn-danger btn-sm" style="width: 100%; justify-content: center;">
+          🔒 Sign Out (${displayId})
+        </a>
       </div>
     </aside>
 

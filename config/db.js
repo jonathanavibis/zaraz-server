@@ -1,36 +1,43 @@
 import mongoose from 'mongoose';
 
 let cachedConnection = null;
+let connectionPromise = null;
 
 const connectDB = async () => {
-  // If already connected, reuse existing connection
   if (mongoose.connection.readyState === 1) {
     return mongoose.connection;
   }
 
-  if (cachedConnection && mongoose.connection.readyState !== 0) {
-    return cachedConnection;
+  if (connectionPromise) {
+    return connectionPromise;
   }
 
-  try {
-    const mongoUri =
-      process.env.MONGODB_URI ||
-      process.env.MONGODB_URL ||
-      'mongodb+srv://zaraz-admin:6681CptbyrN76kua@cluster0.qlpxs02.mongodb.net/zaraz_db?retryWrites=true&w=majority';
+  const mongoUri =
+    process.env.MONGODB_URI ||
+    process.env.MONGODB_URL ||
+    'mongodb+srv://zaraz-admin:6681CptbyrN76kua@cluster0.qlpxs02.mongodb.net/zaraz_db?retryWrites=true&w=majority';
 
-    cachedConnection = await mongoose.connect(mongoUri, {
+  connectionPromise = mongoose
+    .connect(mongoUri, {
       serverSelectionTimeoutMS: 8000,
       socketTimeoutMS: 45000,
       tlsAllowInvalidCertificates: true,
+    })
+    .then((conn) => {
+      cachedConnection = conn.connection || mongoose.connection;
+      console.log(
+        `[MongoDB Connected]: ${cachedConnection.host}/${cachedConnection.name}`
+      );
+      return cachedConnection;
+    })
+    .catch((error) => {
+      console.error(`[MongoDB Connection Error]: ${error.message}`);
+      cachedConnection = null;
+      connectionPromise = null;
+      throw error;
     });
 
-    console.log(`[MongoDB Connected]: ${cachedConnection.connection.host}/${cachedConnection.connection.name}`);
-    return cachedConnection;
-  } catch (error) {
-    console.error(`[MongoDB Connection Error]: ${error.message}`);
-    cachedConnection = null;
-    throw error;
-  }
+  return connectionPromise;
 };
 
 /**

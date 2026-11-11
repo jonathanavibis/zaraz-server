@@ -9,6 +9,17 @@ export const verifyToken = async (req, res, next) => {
     token = authHeader.split(' ')[1];
   }
 
+  if (!token && req.serverAccount) {
+    req.user = {
+      _id: req.serverAccount._id,
+      id: req.serverAccount.id,
+      name: req.serverAccount.name,
+      role: 'admin',
+      isServerAccount: true,
+    };
+    return next();
+  }
+
   if (!token) {
     return res.status(401).json({
       success: false,
@@ -57,7 +68,8 @@ export const verifyToken = async (req, res, next) => {
 };
 
 export const verifyAdmin = (req, res, next) => {
-  if (req.user && req.user.role === 'admin') {
+  const role = req.user?.role?.toLowerCase();
+  if (req.serverAccount || (req.user && role === 'admin')) {
     next();
   } else {
     return res.status(403).json({
@@ -68,7 +80,8 @@ export const verifyAdmin = (req, res, next) => {
 };
 
 export const verifySellerOrAdmin = (req, res, next) => {
-  if (req.user && (req.user.role === 'admin' || req.user.role === 'seller')) {
+  const role = req.user?.role?.toLowerCase();
+  if (req.serverAccount || (req.user && (role === 'admin' || role === 'seller'))) {
     next();
   } else {
     return res.status(403).json({
