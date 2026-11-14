@@ -763,11 +763,11 @@ export const renderServerLoginLogsPage = async (req, res) => {
     const uniqueOperators = new Set(logs.map((l) => l.accountId)).size;
 
     const roleCounts = {
-      ADMIN: logs.filter((l) => l.type === 'ADMIN').length,
-      EDITOR: logs.filter((l) => l.type === 'EDITOR').length,
-      MODERATOR: logs.filter((l) => l.type === 'MODERATOR').length,
-      WORKER: logs.filter((l) => l.type === 'WORKER').length,
-      VIEWER: logs.filter((l) => l.type === 'VIEWER').length,
+      ADMIN: logs.filter((l) => normalizeServerAccType(l.type) === 'ADMIN').length,
+      EDITOR: logs.filter((l) => normalizeServerAccType(l.type) === 'EDITOR').length,
+      MODERATOR: logs.filter((l) => normalizeServerAccType(l.type) === 'MODERATOR').length,
+      WORKER: logs.filter((l) => normalizeServerAccType(l.type) === 'WORKER').length,
+      VIEWER: logs.filter((l) => normalizeServerAccType(l.type) === 'VIEWER').length,
     };
 
     if (!wantsHtml) {
@@ -810,18 +810,19 @@ export const renderServerLoginLogsPage = async (req, res) => {
             const statusStyle = isSuccess
               ? 'background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);'
               : 'background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);';
-            const roleStyle = roleStyleMap[item.type] || roleStyleMap.ADMIN;
+            const itemType = normalizeServerAccType(item.type);
+            const roleStyle = roleStyleMap[itemType] || roleStyleMap.VIEWER;
             const logDate = item.loggedAt ? new Date(item.loggedAt) : new Date();
 
             return `
-            <tr class="log-row" data-status="${item.status}" data-type="${item.type}" data-operator="${escapeHtml(item.accountId)} ${escapeHtml(item.name)} ${escapeHtml(item.ip)}">
+            <tr class="log-row" data-status="${item.status}" data-type="${itemType}" data-operator="${escapeHtml(item.accountId)} ${escapeHtml(item.name)} ${escapeHtml(item.ip)}">
               <td>
                 <div style="font-weight: 700; color: #fff;">${escapeHtml(item.name || item.accountId)}</div>
                 <div style="font-size: 0.72rem; color: var(--muted); font-family: 'JetBrains Mono', monospace;">id: ${escapeHtml(item.accountId)}</div>
               </td>
               <td>
                 <span class="badge-pill" style="${roleStyle} font-weight: 800; letter-spacing: 0.04em;">
-                  ${escapeHtml(item.type)}
+                  ${escapeHtml(itemType)}
                 </span>
               </td>
               <td>

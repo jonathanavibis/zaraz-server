@@ -18,14 +18,14 @@ export const SERVER_ACC_TYPES = {
 };
 
 export const normalizeServerAccType = (rawType) => {
-  if (!rawType || typeof rawType !== 'string') return 'ADMIN';
+  if (!rawType || typeof rawType !== 'string') return 'VIEWER';
   const upper = rawType.trim().toUpperCase();
-  if (['ADMIN', 'SUPERADMIN', 'SERVER-ADMIN', 'OWNER'].includes(upper)) return 'ADMIN';
-  if (['EDITOR', 'EDIT'].includes(upper)) return 'EDITOR';
+  if (['ADMIN', 'SUPERADMIN', 'SERVER-ADMIN', 'OWNER', 'ROOT'].includes(upper)) return 'ADMIN';
+  if (['EDITOR', 'EDIT', 'CONTENT-CREATOR'].includes(upper)) return 'EDITOR';
   if (['MODERATOR', 'MOD'].includes(upper)) return 'MODERATOR';
-  if (['WORKER', 'STAFF', 'OPERATOR'].includes(upper)) return 'WORKER';
-  if (['VIEWER', 'READONLY', 'GUEST'].includes(upper)) return 'VIEWER';
-  return 'ADMIN';
+  if (['WORKER', 'STAFF', 'OPERATOR', 'EMPLOYEE'].includes(upper)) return 'WORKER';
+  if (['VIEWER', 'VIEW', 'READONLY', 'READ-ONLY', 'GUEST', 'USER', 'VISITOR'].includes(upper)) return 'VIEWER';
+  return 'VIEWER';
 };
 
 const IDENTIFIER_FIELDS = ['id', 'accountId', 'userId', 'adminId', 'username', 'email'];
@@ -158,7 +158,7 @@ export const getLoginLogsCollection = async () => {
 export const recordServerLoginLog = async ({
   accountId,
   name = '',
-  type = 'ADMIN',
+  type = '',
   ip = '',
   userAgent = '',
   status = 'SUCCESS',
@@ -166,11 +166,22 @@ export const recordServerLoginLog = async ({
 }) => {
   try {
     const logsCollection = await getLoginLogsCollection();
-    const normalizedType = normalizeServerAccType(type);
+    const accountsCollection = await getAccountsCollection();
+    const targetAccount = accountId ? await findServerAccountByIdentifier(String(accountId)) : null;
+
+    // Resolve accurate operator type and name strictly from target account in SERVER_ACC.accounts if available
+    const resolvedType = targetAccount
+      ? normalizeServerAccType(targetAccount.type || targetAccount.role)
+      : (type ? normalizeServerAccType(type) : 'VIEWER');
+
+    const resolvedName = (targetAccount && targetAccount.name)
+      ? targetAccount.name
+      : (name || accountId || 'Unknown Operator');
+
     const logDoc = {
       accountId: String(accountId || 'UNKNOWN'),
-      name: String(name || accountId || 'Unknown Operator'),
-      type: normalizedType,
+      name: String(resolvedName),
+      type: resolvedType,
       ip: String(ip || '127.0.0.1'),
       userAgent: String(userAgent || 'Unknown Device'),
       status: status === 'SUCCESS' ? 'SUCCESS' : 'FAILED',
@@ -181,8 +192,6 @@ export const recordServerLoginLog = async ({
     await logsCollection.insertOne(logDoc);
 
     // Also update last login info on the account in SERVER_ACC.accounts
-    const accountsCollection = await getAccountsCollection();
-    const targetAccount = await findServerAccountByIdentifier(String(accountId));
     if (targetAccount) {
       await accountsCollection.updateOne(
         { _id: targetAccount._id },
@@ -190,8 +199,8 @@ export const recordServerLoginLog = async ({
           $set: {
             lastLoginAt: new Date(),
             lastLoginIp: String(ip || '127.0.0.1'),
-            type: targetAccount.type || normalizedType,
-            role: targetAccount.role || normalizedType,
+            type: resolvedType,
+            role: resolvedType,
           },
           $inc: { loginCount: 1 },
         }
@@ -207,17 +216,48 @@ export const recordServerLoginLog = async ({
 
 /**
  * Retrieves audit login logs directly from the separate `SERVER_ACC.login_logs` collection.
+ * Dynamically reconciles operator types with registered accounts to guarantee the tag
+ * always accurately displays the operator's actual assigned role (e.g. VIEWER).
  */
 export const getServerLoginLogs = async ({ limit = 100, page = 1 } = {}) => {
-  const collection = await getLoginLogsCollection();
+  const [logsCollection, accountsCollection] = await Promise.all([
+    getLoginLogsCollection(),
+    getAccountsCollection(),
+  ]);
+
   const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 100, 1), 300);
   const parsedPage = Math.max(parseInt(page, 10) || 1, 1);
   const skip = (parsedPage - 1) * parsedLimit;
 
-  const [total, logs] = await Promise.all([
-    collection.countDocuments(),
-    collection.find({}).sort({ loggedAt: -1 }).skip(skip).limit(parsedLimit).toArray(),
+  const [total, rawLogs, accounts] = await Promise.all([
+    logsCollection.countDocuments(),
+    logsCollection.find({}).sort({ loggedAt: -1 }).skip(skip).limit(parsedLimit).toArray(),
+    accountsCollection.find({}).toArray(),
   ]);
+
+  // Build account lookup map to ensure logs dynamically reflect the operator's current account type & name
+  const accountTypeMap = new Map();
+  for (const acc of accounts) {
+    const accType = normalizeServerAccType(acc.type || acc.role);
+    const accName = acc.name;
+    IDENTIFIER_FIELDS.forEach((f) => {
+      if (acc[f]) {
+        accountTypeMap.set(String(acc[f]).toLowerCase(), { type: accType, name: accName });
+      }
+    });
+    accountTypeMap.set(String(acc._id).toLowerCase(), { type: accType, name: accName });
+  }
+
+  const logs = rawLogs.map((log) => {
+    const accountInfo = accountTypeMap.get(String(log.accountId || '').toLowerCase());
+    const finalType = accountInfo ? accountInfo.type : normalizeServerAccType(log.type);
+    const finalName = (accountInfo && accountInfo.name) ? accountInfo.name : (log.name || log.accountId);
+    return {
+      ...log,
+      type: finalType,
+      name: finalName,
+    };
+  });
 
   return {
     total,

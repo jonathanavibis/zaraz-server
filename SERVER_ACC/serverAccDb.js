@@ -67,11 +67,25 @@ export const initServerAccVault = async () => {
         .toArray();
 
       for (const acc of accountsWithoutType) {
-        const assignedType = (acc.role || 'ADMIN').toUpperCase();
+        const assignedType = (acc.role || 'VIEWER').toUpperCase();
         await accountsCol.updateOne(
           { _id: acc._id },
           { $set: { type: assignedType, role: assignedType } }
         );
+      }
+
+      // 4. Synchronize all logs in login_logs to match their account's actual type
+      const logsCol = nativeDb.collection(SERVER_LOGIN_LOGS_COLLECTION);
+      const allAccounts = await accountsCol.find({}).toArray();
+      for (const acc of allAccounts) {
+        const id = acc.id || acc.accountId || acc.email || acc.username;
+        const normalizedType = (acc.type || acc.role || 'VIEWER').toUpperCase();
+        if (id && normalizedType) {
+          await logsCol.updateMany(
+            { accountId: id, type: { $ne: normalizedType } },
+            { $set: { type: normalizedType, name: acc.name || id } }
+          );
+        }
       }
     } catch (err) {
       console.error('[initServerAccVault type migration error]:', err.message);
