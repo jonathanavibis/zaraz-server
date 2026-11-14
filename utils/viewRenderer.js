@@ -144,6 +144,9 @@ export const renderBaseLayout = ({
       justify-content: space-between;
       gap: 1rem;
       z-index: 100;
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(10px);
     }
     .topbar-brand {
       display: flex;
@@ -282,10 +285,11 @@ export const renderBaseLayout = ({
       display: flex;
       flex: 1;
       width: 100%;
-      min-height: calc(100vh - 50px);
+      min-height: calc(100vh - 52px);
+      align-items: flex-start;
     }
 
-    /* Left Sidebar */
+    /* Left Sidebar - Sticky/Fixed during scroll */
     .sidebar {
       width: 230px;
       min-width: 230px;
@@ -296,6 +300,12 @@ export const renderBaseLayout = ({
       justify-content: space-between;
       padding: 1.25rem 0.85rem;
       z-index: 40;
+      position: sticky;
+      top: 52px;
+      height: calc(100vh - 52px);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(16, 185, 129, 0.25) transparent;
     }
     .sidebar-section-title {
       font-size: 0.68rem;
@@ -386,9 +396,10 @@ export const renderBaseLayout = ({
       display: flex;
       flex: 1;
       width: 100%;
+      align-items: flex-start;
     }
 
-    /* Middle Column: REAL Services & Data Nodes */
+    /* Middle Column: REAL Services & Data Nodes - Sticky/Fixed during scroll */
     .services-column {
       width: 310px;
       min-width: 310px;
@@ -398,6 +409,12 @@ export const renderBaseLayout = ({
       flex-direction: column;
       justify-content: space-between;
       padding: 1.25rem 1rem;
+      position: sticky;
+      top: 52px;
+      height: calc(100vh - 52px);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(16, 185, 129, 0.25) transparent;
     }
     .services-header {
       font-size: 0.82rem;
@@ -797,6 +814,28 @@ export const renderBaseLayout = ({
     .toast-success { background: #041d13; color: #6ee7b7; border: 1px solid var(--emerald); }
     .toast-error { background: #450a0a; color: #fca5a5; border: 1px solid #ef4444; }
 
+    /* Modern Sleek Minimal Emerald Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(16, 185, 129, 0.25);
+      border-radius: 9999px;
+      border: 1px solid rgba(16, 185, 129, 0.15);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(16, 185, 129, 0.6);
+      border-color: rgba(52, 211, 153, 0.4);
+    }
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(16, 185, 129, 0.25) transparent;
+    }
+
     /* Responsive */
     @media (max-width: 1080px) {
       .grid-3 { grid-template-columns: 1fr; }
@@ -804,10 +843,10 @@ export const renderBaseLayout = ({
       .services-column { width: 270px; min-width: 270px; }
     }
     @media (max-width: 860px) {
-      .dashboard-layout { flex-direction: column; }
-      .services-column { width: 100%; min-width: 100%; border-right: none; border-bottom: 1px solid var(--border-card); }
-      .sidebar { width: 100%; min-width: 100%; height: auto; border-right: none; border-bottom: 1px solid var(--border-card); }
-      .app-shell { flex-direction: column; }
+      .dashboard-layout { flex-direction: column; align-items: stretch; }
+      .services-column { width: 100%; min-width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border-card); }
+      .sidebar { width: 100%; min-width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border-card); }
+      .app-shell { flex-direction: column; align-items: stretch; }
     }
 
     ${extraHead}
