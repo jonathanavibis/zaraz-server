@@ -5,8 +5,28 @@ import {
   getServerAccDb,
   initServerAccVault,
   SERVER_ACC_COLLECTION,
+  SERVER_LOGIN_LOGS_COLLECTION,
   SERVER_ACC_DB_NAME,
 } from './serverAccDb.js';
+
+export const SERVER_ACC_TYPES = {
+  ADMIN: 'ADMIN',
+  EDITOR: 'EDITOR',
+  MODERATOR: 'MODERATOR',
+  WORKER: 'WORKER',
+  VIEWER: 'VIEWER',
+};
+
+export const normalizeServerAccType = (rawType) => {
+  if (!rawType || typeof rawType !== 'string') return 'ADMIN';
+  const upper = rawType.trim().toUpperCase();
+  if (['ADMIN', 'SUPERADMIN', 'SERVER-ADMIN', 'OWNER'].includes(upper)) return 'ADMIN';
+  if (['EDITOR', 'EDIT'].includes(upper)) return 'EDITOR';
+  if (['MODERATOR', 'MOD'].includes(upper)) return 'MODERATOR';
+  if (['WORKER', 'STAFF', 'OPERATOR'].includes(upper)) return 'WORKER';
+  if (['VIEWER', 'READONLY', 'GUEST'].includes(upper)) return 'VIEWER';
+  return 'ADMIN';
+};
 
 const IDENTIFIER_FIELDS = ['id', 'accountId', 'userId', 'adminId', 'username', 'email'];
 
@@ -125,8 +145,69 @@ export const touchServerAccountLogin = async (docId) => {
   );
 };
 
+export const getLoginLogsCollection = async () => {
+  const nativeDb = await initServerAccVault();
+  return nativeDb.collection(SERVER_LOGIN_LOGS_COLLECTION);
+};
+
+/**
+ * Records a server operator login event (both successful and failed) in SERVER_ACC.login_logs.
+ */
+export const recordServerLoginLog = async ({
+  accountId,
+  name = '',
+  type = 'ADMIN',
+  ip = '',
+  userAgent = '',
+  status = 'SUCCESS',
+  failureReason = '',
+}) => {
+  try {
+    const collection = await getLoginLogsCollection();
+    const logDoc = {
+      accountId: String(accountId || 'UNKNOWN'),
+      name: String(name || accountId || 'Unknown Operator'),
+      type: normalizeServerAccType(type),
+      ip: String(ip || '127.0.0.1'),
+      userAgent: String(userAgent || 'Unknown Device'),
+      status: status === 'SUCCESS' ? 'SUCCESS' : 'FAILED',
+      failureReason: String(failureReason || ''),
+      loggedAt: new Date(),
+    };
+    await collection.insertOne(logDoc);
+    return logDoc;
+  } catch (err) {
+    console.error('[recordServerLoginLog Error]:', err.message);
+    return null;
+  }
+};
+
+/**
+ * Retrieves audit login logs from SERVER_ACC.login_logs (Admin Only).
+ */
+export const getServerLoginLogs = async ({ limit = 50, page = 1 } = {}) => {
+  const collection = await getLoginLogsCollection();
+  const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 200);
+  const parsedPage = Math.max(parseInt(page, 10) || 1, 1);
+  const skip = (parsedPage - 1) * parsedLimit;
+
+  const [total, logs] = await Promise.all([
+    collection.countDocuments(),
+    collection.find({}).sort({ loggedAt: -1 }).skip(skip).limit(parsedLimit).toArray(),
+  ]);
+
+  return {
+    total,
+    page: parsedPage,
+    limit: parsedLimit,
+    totalPages: Math.ceil(total / parsedLimit),
+    logs,
+  };
+};
+
 /**
  * Strips sensitive credential fields before attaching to request or JSON response.
+ * Normalizes account type (ADMIN, EDITOR, MODERATOR, WORKER, VIEWER) and maps permission flags.
  */
 export const sanitizeServerAccount = (doc) => {
   if (!doc) return null;
@@ -139,14 +220,24 @@ export const sanitizeServerAccount = (doc) => {
     doc.email ||
     String(doc._id);
 
+  const type = normalizeServerAccType(doc.type || doc.role);
+
   return {
     _id: String(doc._id),
     id: String(identifier),
     name: doc.name || String(identifier),
-    role: doc.role || 'server-admin',
+    type: type,
+    role: type,
     isActive: doc.isActive !== false,
     lastLoginAt: doc.lastLoginAt || null,
     database: SERVER_ACC_DB_NAME,
     collection: SERVER_ACC_COLLECTION,
+    permissions: {
+      canDeleteUsers: type === 'ADMIN',
+      canViewLoginLogs: type === 'ADMIN',
+      canEditCatalog: ['ADMIN', 'EDITOR'].includes(type),
+      canUpdateOrders: ['ADMIN', 'EDITOR', 'MODERATOR', 'WORKER'].includes(type),
+      isReadOnly: type === 'VIEWER',
+    },
   };
 };

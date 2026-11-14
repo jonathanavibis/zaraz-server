@@ -461,6 +461,13 @@ export const getProductById = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   try {
+    if (req.serverAccount && !['ADMIN', 'EDITOR'].includes(req.serverAccount.type)) {
+      return res.status(403).json({
+        success: false,
+        message: `Forbidden: Only ADMIN and EDITOR operators can create catalog products. Your current role is ${req.serverAccount.type}.`,
+      });
+    }
+
     const body = req.body;
     const slug =
       body.slug ||
@@ -490,6 +497,13 @@ export const createProduct = async (req, res) => {
 
 export const updateProduct = async (req, res) => {
   try {
+    if (req.serverAccount && !['ADMIN', 'EDITOR'].includes(req.serverAccount.type)) {
+      return res.status(403).json({
+        success: false,
+        message: `Forbidden: Only ADMIN and EDITOR operators can update catalog products. Your current role is ${req.serverAccount.type}.`,
+      });
+    }
+
     const { id } = req.params;
     const updated = await Product.findByIdAndUpdate(id, req.body, {
       new: true,
@@ -519,6 +533,13 @@ export const updateProduct = async (req, res) => {
 
 export const deleteProduct = async (req, res) => {
   try {
+    if (req.serverAccount && !['ADMIN', 'EDITOR'].includes(req.serverAccount.type)) {
+      return res.status(403).json({
+        success: false,
+        message: `Forbidden: Only ADMIN and EDITOR operators can delete catalog products. Your current role is ${req.serverAccount.type}.`,
+      });
+    }
+
     const { id } = req.params;
     const deleted = await Product.findByIdAndDelete(id);
 

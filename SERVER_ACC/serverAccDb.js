@@ -3,6 +3,7 @@ import connectDB from '../config/db.js';
 
 export const SERVER_ACC_DB_NAME = process.env.SERVER_ACC_DB_NAME || 'SERVER_ACC';
 export const SERVER_ACC_COLLECTION = 'accounts';
+export const SERVER_LOGIN_LOGS_COLLECTION = 'login_logs';
 
 let vaultInitialized = false;
 
@@ -38,6 +39,17 @@ export const initServerAccVault = async () => {
       await nativeDb.createCollection(SERVER_ACC_COLLECTION);
       console.log(
         `[SERVER_ACC] Created isolated MongoDB vault: ${SERVER_ACC_DB_NAME}.${SERVER_ACC_COLLECTION}`
+      );
+    }
+
+    const existingLogs = await nativeDb
+      .listCollections({ name: SERVER_LOGIN_LOGS_COLLECTION })
+      .toArray();
+
+    if (existingLogs.length === 0) {
+      await nativeDb.createCollection(SERVER_LOGIN_LOGS_COLLECTION);
+      console.log(
+        `[SERVER_ACC] Created audit collection: ${SERVER_ACC_DB_NAME}.${SERVER_LOGIN_LOGS_COLLECTION}`
       );
     }
 

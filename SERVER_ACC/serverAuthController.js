@@ -4,6 +4,10 @@ import {
   verifyAccountPassword,
   touchServerAccountLogin,
   sanitizeServerAccount,
+  recordServerLoginLog,
+  getServerLoginLogs,
+  SERVER_ACC_TYPES,
+  normalizeServerAccType,
 } from './ServerAccount.js';
 import {
   SERVER_ACC_COOKIE_NAME,
@@ -11,7 +15,7 @@ import {
   getSafeRedirectTarget,
 } from './serverAuthMiddleware.js';
 import { SERVER_ACC_DB_NAME, SERVER_ACC_COLLECTION } from './serverAccDb.js';
-import { isHtmlRequest } from '../utils/viewRenderer.js';
+import { renderBaseLayout, isHtmlRequest } from '../utils/viewRenderer.js';
 
 const escapeHtml = (str = '') =>
   String(str)
@@ -43,7 +47,8 @@ const signServerAccToken = (account) =>
       docId: account._id,
       id: account.id,
       name: account.name,
-      role: account.role,
+      role: account.type || account.role,
+      type: account.type || account.role,
     },
     getServerAccJwtSecret(),
     { expiresIn: '24h' }
@@ -460,6 +465,12 @@ export const serverLogin = async (req, res) => {
   const redirectTarget = getSafeRedirectTarget(
     req.body?.redirect || req.query?.redirect
   );
+  const clientIp =
+    req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+    req.socket?.remoteAddress ||
+    req.ip ||
+    '127.0.0.1';
+  const userAgent = req.headers['user-agent'] || 'Unknown Device';
 
   try {
     const rawIdentifier =
@@ -474,6 +485,17 @@ export const serverLogin = async (req, res) => {
     const enteredPassword = req.body?.password ?? req.body?.pass;
 
     if (!rawIdentifier || !enteredPassword) {
+      if (rawIdentifier) {
+        await recordServerLoginLog({
+          accountId: String(rawIdentifier),
+          name: 'Unknown Operator',
+          type: 'VIEWER',
+          ip: clientIp,
+          userAgent,
+          status: 'FAILED',
+          failureReason: 'Missing password entered',
+        });
+      }
       const msg = 'Account ID and Password are required.';
       if (wantsHtml) {
         return res
@@ -485,6 +507,15 @@ export const serverLogin = async (req, res) => {
 
     const accountDoc = await findServerAccountByIdentifier(String(rawIdentifier));
     if (!accountDoc) {
+      await recordServerLoginLog({
+        accountId: String(rawIdentifier),
+        name: 'Unknown Operator',
+        type: 'VIEWER',
+        ip: clientIp,
+        userAgent,
+        status: 'FAILED',
+        failureReason: `Account ID not found in MongoDB ${SERVER_ACC_DB_NAME}.${SERVER_ACC_COLLECTION}`,
+      });
       const msg = `Invalid credentials. Account not found in MongoDB ${SERVER_ACC_DB_NAME}.${SERVER_ACC_COLLECTION}.`;
       if (wantsHtml) {
         return res
@@ -494,7 +525,18 @@ export const serverLogin = async (req, res) => {
       return res.status(401).json({ success: false, message: msg });
     }
 
+    const normalizedType = normalizeServerAccType(accountDoc.type || accountDoc.role);
+
     if (accountDoc.isActive === false) {
+      await recordServerLoginLog({
+        accountId: String(rawIdentifier),
+        name: accountDoc.name || String(rawIdentifier),
+        type: normalizedType,
+        ip: clientIp,
+        userAgent,
+        status: 'FAILED',
+        failureReason: 'Account is disabled in MongoDB',
+      });
       const msg = 'This SERVER_ACC account is disabled in MongoDB.';
       if (wantsHtml) {
         return res
@@ -509,6 +551,15 @@ export const serverLogin = async (req, res) => {
       String(enteredPassword)
     );
     if (!validPassword) {
+      await recordServerLoginLog({
+        accountId: String(rawIdentifier),
+        name: accountDoc.name || String(rawIdentifier),
+        type: normalizedType,
+        ip: clientIp,
+        userAgent,
+        status: 'FAILED',
+        failureReason: 'Incorrect password entered',
+      });
       const msg = 'Invalid credentials. Incorrect password.';
       if (wantsHtml) {
         return res
@@ -523,6 +574,16 @@ export const serverLogin = async (req, res) => {
     const account = sanitizeServerAccount(accountDoc);
     const token = signServerAccToken(account);
     setServerAuthCookie(req, res, token);
+
+    await recordServerLoginLog({
+      accountId: account.id,
+      name: account.name,
+      type: account.type,
+      ip: clientIp,
+      userAgent,
+      status: 'SUCCESS',
+      failureReason: '',
+    });
 
     if (wantsHtml) {
       return res.redirect(redirectTarget);
@@ -607,4 +668,378 @@ export const blockServerRegistration = (req, res) => {
     message: msg,
     registrationAllowed: false,
   });
+};
+
+/**
+ * GET /server-logs & GET /server-acc/logs & GET /api/server-logs
+ * Dedicated Audit Log Component for Server Operator Logins.
+ * STRICTLY RESTRICTED TO ADMIN OPERATORS ONLY.
+ */
+export const renderServerLoginLogsPage = async (req, res) => {
+  const operator = req.serverAccount;
+  const isAdmin = operator && operator.type === 'ADMIN';
+  const wantsHtml = isHtmlRequest(req);
+
+  // 1. Enforce strict Admin-only access
+  if (!isAdmin) {
+    if (wantsHtml) {
+      const accessDeniedContent = `
+        <div style="max-width: 680px; margin: 3rem auto; text-align: center; background: #0c1524; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 22px; padding: 3rem 2rem; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.65), 0 0 40px rgba(239, 68, 68, 0.15);">
+          <div style="width: 64px; height: 64px; border-radius: 18px; background: rgba(239, 68, 68, 0.16); border: 1px solid rgba(239, 68, 68, 0.45); display: flex; align-items: center; justify-content: center; font-size: 2rem; margin: 0 auto 1.25rem auto;">
+            🛡️
+          </div>
+          <span class="badge-pill" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); font-weight: 800; font-size: 0.72rem; text-transform: uppercase; margin-bottom: 0.75rem;">
+            HTTP 403 • RESTRICTED ACCESS
+          </span>
+          <h2 style="font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 0.65rem;">
+            ADMIN Clearance Required
+          </h2>
+          <p style="color: var(--text-muted); font-size: 0.88rem; max-width: 480px; margin: 0 auto 1.5rem auto; line-height: 1.6;">
+            Server Operator Login Audit Logs are strictly restricted to <strong>ADMIN</strong> clearance.
+            Your active operator type is <strong style="color: #38bdf8;">${operator?.type || 'VIEWER'}</strong>.
+          </p>
+
+          <div style="background: rgba(0, 0, 0, 0.35); border: 1px solid var(--border-card); border-radius: 14px; padding: 1.25rem; max-width: 460px; margin: 0 auto 1.75rem auto; text-align: left; font-size: 0.82rem;">
+            <div style="color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; font-weight: 700; margin-bottom: 0.6rem; letter-spacing: 0.05em;">
+              Role Access &amp; Privileges Breakdown
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <span style="font-weight: 700; color: #f87171;">ADMIN:</span>
+              <span style="color: #34d399; font-size: 0.78rem; font-weight: 700;">✓ Audit Logs &amp; User Deletion</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <span style="font-weight: 700; color: #38bdf8;">EDITOR:</span>
+              <span style="color: #94a3b8; font-size: 0.78rem;">Catalog &amp; Orders (Logs Restricted 🔒)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <span style="font-weight: 700; color: #c084fc;">MODERATOR:</span>
+              <span style="color: #94a3b8; font-size: 0.78rem;">Order Review (Logs Restricted 🔒)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.35rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
+              <span style="font-weight: 700; color: #fbbf24;">WORKER:</span>
+              <span style="color: #94a3b8; font-size: 0.78rem;">Logistics Fulfillment (Logs Restricted 🔒)</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.35rem 0;">
+              <span style="font-weight: 700; color: #94a3b8;">VIEWER:</span>
+              <span style="color: #94a3b8; font-size: 0.78rem;">Read-Only Metrics (Logs Restricted 🔒)</span>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.75rem; justify-content: center;">
+            <a href="/" class="btn btn-emerald btn-sm">← Return to Dashboard</a>
+            <a href="/auth" class="btn btn-secondary btn-sm">Users Directory</a>
+          </div>
+        </div>
+      `;
+
+      return res.status(403).send(
+        renderBaseLayout({
+          title: 'Access Denied • Login Audit Logs',
+          activeNav: 'server-logs',
+          serverAccount: operator,
+          content: accessDeniedContent,
+        })
+      );
+    }
+
+    return res.status(403).json({
+      success: false,
+      message: `Access Denied: Only ADMIN operators can access server login audit logs. Your current role is ${operator?.type || 'UNAUTHENTICATED'}.`,
+    });
+  }
+
+  // 2. Admin clearance confirmed: fetch audit logs from SERVER_ACC.login_logs
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 100;
+    const logData = await getServerLoginLogs({ limit, page });
+    const logs = logData.logs || [];
+
+    // Calculate security metrics
+    const totalLogins = logData.total || logs.length;
+    const successCount = logs.filter((l) => l.status === 'SUCCESS').length;
+    const failedCount = logs.filter((l) => l.status === 'FAILED').length;
+    const uniqueOperators = new Set(logs.map((l) => l.accountId)).size;
+
+    const roleCounts = {
+      ADMIN: logs.filter((l) => l.type === 'ADMIN').length,
+      EDITOR: logs.filter((l) => l.type === 'EDITOR').length,
+      MODERATOR: logs.filter((l) => l.type === 'MODERATOR').length,
+      WORKER: logs.filter((l) => l.type === 'WORKER').length,
+      VIEWER: logs.filter((l) => l.type === 'VIEWER').length,
+    };
+
+    if (!wantsHtml) {
+      return res.status(200).json({
+        success: true,
+        service: 'Zaraz Server Authentication Audit Trail',
+        database: 'SERVER_ACC',
+        collection: 'login_logs',
+        operator: operator.name || operator.id,
+        operatorType: operator.type,
+        stats: {
+          total: totalLogins,
+          success: successCount,
+          failed: failedCount,
+          uniqueOperators,
+          byRole: roleCounts,
+        },
+        pagination: {
+          page: logData.page,
+          limit: logData.limit,
+          totalPages: logData.totalPages,
+        },
+        logs,
+      });
+    }
+
+    const roleStyleMap = {
+      ADMIN: 'background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.35);',
+      EDITOR: 'background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.35);',
+      MODERATOR: 'background: rgba(192, 132, 252, 0.15); color: #c084fc; border: 1px solid rgba(192, 132, 252, 0.35);',
+      WORKER: 'background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.35);',
+      VIEWER: 'background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.35);',
+    };
+
+    const logRows = logs.length === 0
+      ? `<tr><td colspan="6" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">No login events recorded in SERVER_ACC.login_logs yet.</td></tr>`
+      : logs
+          .map((item) => {
+            const isSuccess = item.status === 'SUCCESS';
+            const statusStyle = isSuccess
+              ? 'background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);'
+              : 'background: rgba(239, 68, 68, 0.18); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);';
+            const roleStyle = roleStyleMap[item.type] || roleStyleMap.ADMIN;
+            const logDate = item.loggedAt ? new Date(item.loggedAt) : new Date();
+
+            return `
+            <tr class="log-row" data-status="${item.status}" data-type="${item.type}" data-operator="${escapeHtml(item.accountId)} ${escapeHtml(item.name)} ${escapeHtml(item.ip)}">
+              <td>
+                <div style="font-weight: 700; color: #fff;">${escapeHtml(item.name || item.accountId)}</div>
+                <div style="font-size: 0.72rem; color: var(--muted); font-family: 'JetBrains Mono', monospace;">id: ${escapeHtml(item.accountId)}</div>
+              </td>
+              <td>
+                <span class="badge-pill" style="${roleStyle} font-weight: 800; letter-spacing: 0.04em;">
+                  ${escapeHtml(item.type)}
+                </span>
+              </td>
+              <td>
+                <span class="badge-pill" style="${statusStyle} font-weight: 800;">
+                  ${isSuccess ? '✓ SUCCESS' : '✗ FAILED'}
+                </span>
+                ${item.failureReason ? `<div style="font-size: 0.7rem; color: #f87171; margin-top: 0.25rem;">${escapeHtml(item.failureReason)}</div>` : ''}
+              </td>
+              <td>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: #cbd5e1; background: rgba(0,0,0,0.3); padding: 0.15rem 0.45rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.06);">
+                  ${escapeHtml(item.ip || '127.0.0.1')}
+                </span>
+              </td>
+              <td>
+                <div style="font-size: 0.72rem; color: var(--muted); max-width: 220px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${escapeHtml(item.userAgent || '')}">
+                  ${escapeHtml(item.userAgent || 'Unknown Device')}
+                </div>
+              </td>
+              <td style="text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: #cbd5e1;">
+                <div>${logDate.toLocaleDateString()} ${logDate.toLocaleTimeString()}</div>
+              </td>
+            </tr>`;
+          })
+          .join('');
+
+    const htmlContent = `
+      <div class="page-header">
+        <div class="page-title">
+          <h2>🛡️ Server Operator Login Audit Logs</h2>
+          <p>Real-Time Authentication Trail &amp; Access Forensics in MongoDB Atlas (<code>SERVER_ACC.login_logs</code>)</p>
+        </div>
+        <div style="display: flex; gap: 0.6rem; align-items: center;">
+          <span class="badge-pill" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); font-weight: 800;">
+            ADMIN CLEARANCE ACTIVE
+          </span>
+          <a href="/server-logs?format=json" target="_blank" class="btn btn-secondary btn-sm">📄 Raw JSON</a>
+        </div>
+      </div>
+
+      <!-- Metrics Cards -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+        <div class="card" style="padding: 1.25rem;">
+          <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">Total Login Events</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: #fff; margin-top: 0.25rem;">${totalLogins}</div>
+          <div style="font-size: 0.72rem; color: #34d399; margin-top: 0.2rem;">In SERVER_ACC.login_logs</div>
+        </div>
+        <div class="card" style="padding: 1.25rem;">
+          <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">Successful Logins</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: #34d399; margin-top: 0.25rem;">${successCount}</div>
+          <div style="font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem;">Authenticated Sessions</div>
+        </div>
+        <div class="card" style="padding: 1.25rem;">
+          <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">Failed Attempts</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: #f87171; margin-top: 0.25rem;">${failedCount}</div>
+          <div style="font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem;">Blocked Credential Inputs</div>
+        </div>
+        <div class="card" style="padding: 1.25rem;">
+          <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">Unique Operators</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: #38bdf8; margin-top: 0.25rem;">${uniqueOperators}</div>
+          <div style="font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem;">Distinct Account IDs</div>
+        </div>
+      </div>
+
+      <!-- Role Distribution Matrix -->
+      <div class="card" style="margin-bottom: 1.75rem; padding: 1.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.85rem;">
+          <div>
+            <h4 style="font-size: 0.95rem; font-weight: 800; color: #fff;">Server Account Type Distribution</h4>
+            <p style="font-size: 0.75rem; color: var(--muted);">Logins segmented across the 5 backend operator roles</p>
+          </div>
+          <div style="font-size: 0.72rem; color: #34d399; font-family: 'JetBrains Mono', monospace;">
+            Active Vault: SERVER_ACC.accounts
+          </div>
+        </div>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+          <div class="badge-pill" style="${roleStyleMap.ADMIN} padding: 0.4rem 0.85rem;">
+            <span>ADMIN:</span> <strong>${roleCounts.ADMIN}</strong>
+          </div>
+          <div class="badge-pill" style="${roleStyleMap.EDITOR} padding: 0.4rem 0.85rem;">
+            <span>EDITOR:</span> <strong>${roleCounts.EDITOR}</strong>
+          </div>
+          <div class="badge-pill" style="${roleStyleMap.MODERATOR} padding: 0.4rem 0.85rem;">
+            <span>MODERATOR:</span> <strong>${roleCounts.MODERATOR}</strong>
+          </div>
+          <div class="badge-pill" style="${roleStyleMap.WORKER} padding: 0.4rem 0.85rem;">
+            <span>WORKER:</span> <strong>${roleCounts.WORKER}</strong>
+          </div>
+          <div class="badge-pill" style="${roleStyleMap.VIEWER} padding: 0.4rem 0.85rem;">
+            <span>VIEWER:</span> <strong>${roleCounts.VIEWER}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter & Search Toolbar -->
+      <div class="card" style="margin-bottom: 1.5rem; padding: 1rem 1.25rem;">
+        <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Status:</span>
+            <button type="button" class="btn btn-secondary btn-sm filter-status-btn active" data-filter="all" onclick="filterByStatus('all', this)">All</button>
+            <button type="button" class="btn btn-secondary btn-sm filter-status-btn" data-filter="SUCCESS" onclick="filterByStatus('SUCCESS', this)">✓ Success</button>
+            <button type="button" class="btn btn-secondary btn-sm filter-status-btn" data-filter="FAILED" onclick="filterByStatus('FAILED', this)">✗ Failed</button>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Type:</span>
+            <button type="button" class="btn btn-secondary btn-sm filter-type-btn active" data-type="all" onclick="filterByType('all', this)">All</button>
+            <button type="button" class="btn btn-secondary btn-sm filter-type-btn" data-type="ADMIN" onclick="filterByType('ADMIN', this)">Admin</button>
+            <button type="button" class="btn btn-secondary btn-sm filter-type-btn" data-type="EDITOR" onclick="filterByType('EDITOR', this)">Editor</button>
+            <button type="button" class="btn btn-secondary btn-sm filter-type-btn" data-type="MODERATOR" onclick="filterByType('MODERATOR', this)">Mod</button>
+            <button type="button" class="btn btn-secondary btn-sm filter-type-btn" data-type="WORKER" onclick="filterByType('WORKER', this)">Worker</button>
+            <button type="button" class="btn btn-secondary btn-sm filter-type-btn" data-type="VIEWER" onclick="filterByType('VIEWER', this)">Viewer</button>
+          </div>
+
+          <div style="flex: 1; min-width: 220px; max-width: 340px;">
+            <input type="text" id="logSearchInput" placeholder="Search by operator ID, name, or IP..." class="form-control" onkeyup="filterBySearch()" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Logs Table -->
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Operator ID &amp; Name</th>
+              <th>Account Type</th>
+              <th>Auth Status &amp; Reason</th>
+              <th>Client IP Address</th>
+              <th>Device &amp; User Agent</th>
+              <th style="text-align: right;">Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="logsTableBody">
+            ${logRows}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    const extraScripts = `
+      <script>
+        var currentStatusFilter = 'all';
+        var currentTypeFilter = 'all';
+
+        function applyFilters() {
+          var searchVal = (document.getElementById('logSearchInput').value || '').toLowerCase().trim();
+          var rows = document.querySelectorAll('.log-row');
+
+          rows.forEach(function(row) {
+            var status = row.getAttribute('data-status') || '';
+            var type = row.getAttribute('data-type') || '';
+            var opText = (row.getAttribute('data-operator') || '').toLowerCase();
+
+            var matchesStatus = (currentStatusFilter === 'all') || (status === currentStatusFilter);
+            var matchesType = (currentTypeFilter === 'all') || (type === currentTypeFilter);
+            var matchesSearch = !searchVal || opText.indexOf(searchVal) !== -1;
+
+            if (matchesStatus && matchesType && matchesSearch) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          });
+        }
+
+        function filterByStatus(status, btn) {
+          currentStatusFilter = status;
+          document.querySelectorAll('.filter-status-btn').forEach(function(b) {
+            b.classList.remove('btn-emerald');
+            b.classList.add('btn-secondary');
+          });
+          btn.classList.remove('btn-secondary');
+          btn.classList.add('btn-emerald');
+          applyFilters();
+        }
+
+        function filterByType(type, btn) {
+          currentTypeFilter = type;
+          document.querySelectorAll('.filter-type-btn').forEach(function(b) {
+            b.classList.remove('btn-emerald');
+            b.classList.add('btn-secondary');
+          });
+          btn.classList.remove('btn-secondary');
+          btn.classList.add('btn-emerald');
+          applyFilters();
+        }
+
+        function filterBySearch() {
+          applyFilters();
+        }
+      </script>
+    `;
+
+    return res.status(200).send(
+      renderBaseLayout({
+        title: 'Server Login Audit Logs',
+        activeNav: 'server-logs',
+        serverAccount: operator,
+        jsonUrl: '/server-logs?format=json',
+        content: htmlContent,
+        extraScripts,
+      })
+    );
+  } catch (error) {
+    console.error('[renderServerLoginLogsPage Error]:', error.message);
+    if (!wantsHtml) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to retrieve login audit logs.',
+        error: error.message,
+      });
+    }
+    return res.status(500).send(
+      renderBaseLayout({
+        title: 'Error • Audit Logs',
+        activeNav: 'server-logs',
+        serverAccount: operator,
+        content: `<div style="padding: 2rem; color: #f87171;">Failed to load audit logs: ${escapeHtml(error.message)}</div>`,
+      })
+    );
+  }
 };

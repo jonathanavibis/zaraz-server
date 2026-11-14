@@ -168,6 +168,7 @@ export const getMyOrders = async (req, res) => {
     const orders = await Order.find(query).sort({ createdAt: -1 });
 
     const wantsHtml = isHtmlRequest(req);
+    const isViewer = req.serverAccount?.type === 'VIEWER';
 
     if (wantsHtml) {
       const rowsHtml = orders.length === 0
@@ -213,13 +214,17 @@ export const getMyOrders = async (req, res) => {
                 <div style="font-size: 0.68rem; color: #34d399; margin-top: 0.2rem;">${o.payment?.status || 'Pending'}</div>
               </td>
               <td>
-                <select onchange="handleUpdateStatus('${o._id}', this.value)" style="background: #060c14; border: 1px solid ${color}; color: ${color}; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; outline: none; cursor: pointer;">
-                  <option value="Order Placed" ${o.status === 'Order Placed' ? 'selected' : ''}>Order Placed</option>
-                  <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
-                  <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
-                  <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
-                  <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
-                </select>
+                ${
+                  isViewer
+                    ? `<span class="badge-pill" style="border: 1px solid ${color}; color: ${color}; font-weight: 700;">${o.status}</span>`
+                    : `<select onchange="handleUpdateStatus('${o._id}', this.value)" style="background: #060c14; border: 1px solid ${color}; color: ${color}; padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 700; outline: none; cursor: pointer;">
+                        <option value="Order Placed" ${o.status === 'Order Placed' ? 'selected' : ''}>Order Placed</option>
+                        <option value="Processing" ${o.status === 'Processing' ? 'selected' : ''}>Processing</option>
+                        <option value="Shipped" ${o.status === 'Shipped' ? 'selected' : ''}>Shipped</option>
+                        <option value="Delivered" ${o.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+                        <option value="Cancelled" ${o.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                      </select>`
+                }
               </td>
               <td style="text-align: right;">
                 <a href="/orders/${o.orderNumber}" class="btn btn-secondary btn-sm">Timeline</a>
@@ -510,6 +515,13 @@ export const getOrderById = async (req, res) => {
 
 export const updateOrderStatus = async (req, res) => {
   try {
+    if (req.serverAccount && req.serverAccount.type === 'VIEWER') {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: VIEWER accounts have read-only access. Cannot update order status.',
+      });
+    }
+
     const { id } = req.params;
     const { status, note } = req.body;
 

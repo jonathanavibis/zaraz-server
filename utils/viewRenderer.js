@@ -41,12 +41,22 @@ export const renderBaseLayout = ({
   const activeAccount = serverAccount || getCurrentServerAccount();
   const displayName = escapeSafeHtml(activeAccount?.name || activeAccount?.id || 'Server Operator');
   const displayId = escapeSafeHtml(activeAccount?.id || 'SERVER_ACC');
+  const accountType = (activeAccount?.type || 'ADMIN').toUpperCase();
   const initials = escapeSafeHtml(
     (activeAccount?.name || activeAccount?.id || 'SA')
       .trim()
       .slice(0, 2)
       .toUpperCase()
   );
+
+  const roleStyles = {
+    ADMIN: { color: '#f87171', dot: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.35)' },
+    EDITOR: { color: '#38bdf8', dot: '#0ea5e9', bg: 'rgba(56, 189, 248, 0.15)', border: 'rgba(56, 189, 248, 0.35)' },
+    MODERATOR: { color: '#c084fc', dot: '#a855f7', bg: 'rgba(192, 132, 252, 0.15)', border: 'rgba(192, 132, 252, 0.35)' },
+    WORKER: { color: '#fbbf24', dot: '#f59e0b', bg: 'rgba(251, 191, 36, 0.15)', border: 'rgba(251, 191, 36, 0.35)' },
+    VIEWER: { color: '#94a3b8', dot: '#64748b', bg: 'rgba(148, 163, 184, 0.15)', border: 'rgba(148, 163, 184, 0.35)' },
+  };
+  const currentRoleStyle = roleStyles[accountType] || roleStyles.ADMIN;
 
   return `<!DOCTYPE html>
 <html lang="en" data-theme="emerald">
@@ -925,20 +935,32 @@ export const renderBaseLayout = ({
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             <span>Diagnostics</span>
           </a>
+
+          ${accountType === 'ADMIN' ? `
+          <a href="/server-logs" class="nav-item ${activeNav === 'server-logs' ? 'active' : ''}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Login Audit Logs</span>
+            <span class="nav-badge-count" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">ADMIN</span>
+          </a>
+          ` : ''}
         </nav>
       </div>
 
       <!-- Profile & Logout -->
       <div style="display: flex; flex-direction: column; gap: 0.75rem;">
         <div class="sidebar-profile">
-          <div class="profile-avatar">${initials}</div>
+          <div class="profile-avatar" style="border: 2px solid ${currentRoleStyle.dot};">${initials}</div>
           <div style="flex: 1; overflow: hidden;">
             <div class="profile-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${displayName}</div>
-            <div class="profile-role">● SERVER_ACC Verified</div>
+            <div class="profile-role" style="display: flex; align-items: center; gap: 0.35rem; margin-top: 0.15rem;">
+              <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: ${currentRoleStyle.dot}; box-shadow: 0 0 6px ${currentRoleStyle.dot};"></span>
+              <span style="font-weight: 800; font-size: 0.7rem; color: ${currentRoleStyle.color}; letter-spacing: 0.04em;">${accountType}</span>
+              <span style="color: var(--text-muted); font-size: 0.65rem;">• SERVER_ACC</span>
+            </div>
           </div>
         </div>
         <a href="/logout" class="btn btn-danger btn-sm" style="width: 100%; justify-content: center;">
-          🔒 Sign Out (${displayId})
+          🔒 Sign Out (${accountType})
         </a>
       </div>
     </aside>

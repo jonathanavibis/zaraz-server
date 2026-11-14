@@ -5,6 +5,7 @@ import {
   serverLogout,
   getServerMe,
   blockServerRegistration,
+  renderServerLoginLogsPage,
 } from './serverAuthController.js';
 import { requireServerAdminSession } from './serverAuthMiddleware.js';
 
@@ -23,6 +24,13 @@ router.get(
   ['/server-acc/me', '/server-acc/status'],
   requireServerAdminSession,
   getServerMe
+);
+
+// Server Operator Login Audit Logs (Strictly ADMIN clearance enforced in controller)
+router.get(
+  ['/server-logs', '/server-acc/logs', '/api/server-logs'],
+  requireServerAdminSession,
+  renderServerLoginLogsPage
 );
 
 // Explicitly block backend registration / sign-up endpoints

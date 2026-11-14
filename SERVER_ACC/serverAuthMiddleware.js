@@ -171,6 +171,49 @@ const isProtectedAdminApiRequest = (req) => {
 };
 
 /**
+ * Role-Based Access Control helper enforcing specific SERVER_ACC types.
+ */
+export const requireServerType = (...allowedTypes) => {
+  const allowed = allowedTypes.flat().map((t) => String(t).toUpperCase());
+  return (req, res, next) => {
+    if (!req.serverAccount) {
+      if (isHtmlRequest(req)) {
+        const redirectTarget = getSafeRedirectTarget(req.originalUrl || '/');
+        return res.redirect(`/login?redirect=${encodeURIComponent(redirectTarget)}`);
+      }
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required. Log in with SERVER_ACC credentials.',
+      });
+    }
+
+    const currentType = (req.serverAccount.type || 'ADMIN').toUpperCase();
+    if (allowed.length > 0 && !allowed.includes(currentType)) {
+      if (isHtmlRequest(req)) {
+        return res.status(403).send(`
+          <div style="font-family: system-ui, sans-serif; background: #090d16; color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem;">
+            <div style="background: #0c1524; border: 1px solid rgba(239, 68, 68, 0.4); border-radius: 16px; padding: 2rem; max-width: 500px; text-align: center;">
+              <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🛡️</div>
+              <h2 style="font-size: 1.3rem; margin-bottom: 0.5rem;">403 Forbidden</h2>
+              <p style="color: #94a3b8; font-size: 0.85rem; margin-bottom: 1.25rem;">Requires [${allowed.join(', ')}] clearance. Your current role is <strong>${currentType}</strong>.</p>
+              <a href="/" style="background: #10b981; color: #04170f; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 700; text-decoration: none;">Return to Dashboard</a>
+            </div>
+          </div>
+        `);
+      }
+      return res.status(403).json({
+        success: false,
+        message: `Forbidden: Requires [${allowed.join(', ')}] clearance. Your current type is ${currentType}.`,
+      });
+    }
+
+    return next();
+  };
+};
+
+export const requireServerAdmin = requireServerType('ADMIN');
+
+/**
  * Global gateway protecting ALL Backend Server Dashboard HTML pages and admin-only
  * backend mutations behind SERVER_ACC MongoDB authentication, while keeping public
  * JSON APIs available for the Zaraz Shopping storefront.
@@ -181,6 +224,35 @@ export const protectBackendGateway = (req, res, next) => {
   }
 
   if (req.serverAccount) {
+    const operatorType = (req.serverAccount.type || 'ADMIN').toUpperCase();
+    const method = req.method.toUpperCase();
+    const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+
+    // 1. VIEWER is strictly read-only across all backend mutation endpoints
+    if (isMutation && operatorType === 'VIEWER') {
+      return res.status(403).json({
+        success: false,
+        message: 'Forbidden: VIEWER accounts have read-only access. Mutations are disabled.',
+      });
+    }
+
+    // 2. MODERATOR & WORKER cannot alter catalog structure (products, categories, banners)
+    const isCatalogMutation =
+      (req.path.startsWith('/products') ||
+        req.path.startsWith('/api/products') ||
+        req.path.startsWith('/categories') ||
+        req.path.startsWith('/api/categories') ||
+        req.path.startsWith('/banners') ||
+        req.path.startsWith('/api/banners')) &&
+      isMutation;
+
+    if (isCatalogMutation && ['MODERATOR', 'WORKER'].includes(operatorType)) {
+      return res.status(403).json({
+        success: false,
+        message: `Forbidden: Only ADMIN and EDITOR accounts can mutate catalog items. Your current role is ${operatorType}.`,
+      });
+    }
+
     return next();
   }
 

@@ -10,6 +10,7 @@ import {
   getAllUsers,
   getUserStats,
   getAuthOverview,
+  deleteUser,
 } from '../controllers/authController.js';
 import { verifyToken, verifyAdmin } from '../middleware/auth.js';
 
@@ -32,5 +33,6 @@ router.put('/profile', verifyToken, updateProfile);
 
 // Admin-only User Management
 router.get('/users', verifyToken, verifyAdmin, getAllUsers);
+router.delete(['/users/:id', '/user/:id'], deleteUser);
 
 export default router;
