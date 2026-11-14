@@ -939,7 +939,7 @@ export const renderBaseLayout = ({
           ${accountType === 'ADMIN' ? `
           <a href="/server-logs" class="nav-item ${activeNav === 'server-logs' ? 'active' : ''}">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-            <span>Server Accounts &amp; Logs</span>
+            <span>Login Audit Logs</span>
             <span class="nav-badge-count" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">ADMIN</span>
           </a>
           ` : ''}

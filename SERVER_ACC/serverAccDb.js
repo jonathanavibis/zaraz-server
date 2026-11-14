@@ -3,8 +3,7 @@ import connectDB from '../config/db.js';
 
 export const SERVER_ACC_DB_NAME = process.env.SERVER_ACC_DB_NAME || 'SERVER_ACC';
 export const SERVER_ACC_COLLECTION = 'accounts';
-// Unified: Login logs are embedded directly inside SERVER_ACC.accounts
-export const SERVER_LOGIN_LOGS_COLLECTION = 'accounts';
+export const SERVER_LOGIN_LOGS_COLLECTION = 'login_logs';
 
 let vaultInitialized = false;
 
@@ -25,87 +24,57 @@ export const getNativeServerAccDb = async () => {
 };
 
 /**
- * Ensures MongoDB connection is active and initializes the unified `accounts`
- * collection inside the `SERVER_ACC` database where both Accounts and Login Logs reside together.
+ * Ensures MongoDB connection is active and initializes both:
+ * 1. SERVER_ACC.accounts (Server Operator Accounts with mandatory `type` field)
+ * 2. SERVER_ACC.login_logs (Dedicated separate Login Audit Log collection)
  */
 export const initServerAccVault = async () => {
   const nativeDb = await getNativeServerAccDb();
 
   if (!vaultInitialized && nativeDb) {
-    const existing = await nativeDb
-      .listCollections({ name: SERVER_ACC_COLLECTION })
-      .toArray();
+    const collections = await nativeDb.listCollections().toArray();
+    const colNames = new Set(collections.map((c) => c.name));
 
-    if (existing.length === 0) {
+    // 1. Ensure accounts collection exists
+    if (!colNames.has(SERVER_ACC_COLLECTION)) {
       await nativeDb.createCollection(SERVER_ACC_COLLECTION);
       console.log(
-        `[SERVER_ACC] Created unified MongoDB vault: ${SERVER_ACC_DB_NAME}.${SERVER_ACC_COLLECTION}`
+        `[SERVER_ACC] Created isolated MongoDB vault: ${SERVER_ACC_DB_NAME}.${SERVER_ACC_COLLECTION}`
       );
     }
 
-    // Auto-migrate any legacy login_logs collection into accounts so there is strictly 1 unified collection
-    const existingLogs = await nativeDb
-      .listCollections({ name: 'login_logs' })
-      .toArray();
+    // 2. Ensure login_logs collection exists (completely separate)
+    if (!colNames.has(SERVER_LOGIN_LOGS_COLLECTION)) {
+      await nativeDb.createCollection(SERVER_LOGIN_LOGS_COLLECTION);
+      console.log(
+        `[SERVER_ACC] Created separate audit collection: ${SERVER_ACC_DB_NAME}.${SERVER_LOGIN_LOGS_COLLECTION}`
+      );
+    }
 
-    if (existingLogs.length > 0) {
-      try {
-        const legacyLogsCol = nativeDb.collection('login_logs');
-        const accountsCol = nativeDb.collection(SERVER_ACC_COLLECTION);
-        const orphanLogs = await legacyLogsCol.find({}).toArray();
+    // 3. Ensure EVERY account document in accounts has 'type' explicitly set
+    try {
+      const accountsCol = nativeDb.collection(SERVER_ACC_COLLECTION);
 
-        for (const log of orphanLogs) {
-          const accountId = log.accountId;
-          const accountDoc = await accountsCol.findOne({
-            $or: [
-              { id: accountId },
-              { email: accountId },
-              { username: accountId },
-              { accountId: accountId },
-            ],
-          });
+      // Clean up any old system bucket doc or embedded login_logs
+      await accountsCol.deleteMany({
+        $or: [{ id: '__unregistered_attempts__' }, { isSystemBucket: true }],
+      });
+      await accountsCol.updateMany({}, { $unset: { login_logs: '' } });
 
-          const logItem = {
-            logId: log._id ? String(log._id) : undefined,
-            status: log.status,
-            ip: log.ip,
-            userAgent: log.userAgent,
-            failureReason: log.failureReason || '',
-            loggedAt: log.loggedAt || new Date(),
-          };
+      // Add 'type: ADMIN' and 'role: ADMIN' to any account lacking type
+      const accountsWithoutType = await accountsCol
+        .find({ $or: [{ type: { $exists: false } }, { type: null }, { type: '' }] })
+        .toArray();
 
-          if (accountDoc) {
-            await accountsCol.updateOne(
-              { _id: accountDoc._id },
-              {
-                $addToSet: { login_logs: logItem },
-                $set: { lastLoginAt: log.loggedAt, lastLoginIp: log.ip },
-                $inc: { loginCount: 1 },
-              }
-            );
-          } else {
-            await accountsCol.updateOne(
-              { id: '__unregistered_attempts__' },
-              {
-                $setOnInsert: {
-                  id: '__unregistered_attempts__',
-                  name: 'Unregistered Identifier Attempts',
-                  type: 'VIEWER',
-                  isActive: false,
-                  isSystemBucket: true,
-                },
-                $addToSet: { login_logs: logItem },
-              },
-              { upsert: true }
-            );
-          }
-        }
-
-        await legacyLogsCol.drop().catch(() => {});
-        console.log(`[SERVER_ACC] Migrated & unified login_logs into ${SERVER_ACC_COLLECTION}`);
-      } catch (migErr) {
-        console.error('[SERVER_ACC Migration Error]:', migErr.message);
+      for (const acc of accountsWithoutType) {
+        const assignedType = (acc.role || 'ADMIN').toUpperCase();
+        await accountsCol.updateOne(
+          { _id: acc._id },
+          { $set: { type: assignedType, role: assignedType } }
+        );
       }
+    } catch (err) {
+      console.error('[initServerAccVault type migration error]:', err.message);
     }
 
     vaultInitialized = true;

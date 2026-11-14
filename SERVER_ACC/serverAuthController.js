@@ -749,49 +749,42 @@ export const renderServerLoginLogsPage = async (req, res) => {
     });
   }
 
-  // 2. Admin clearance confirmed: fetch unified accounts & audit logs from SERVER_ACC.accounts
+  // 2. Admin clearance confirmed: fetch audit logs from separate SERVER_ACC.login_logs collection
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 100;
-    const [accounts, logData] = await Promise.all([
-      getAllServerAccounts(),
-      getServerLoginLogs({ limit, page }),
-    ]);
+    const logData = await getServerLoginLogs({ limit, page });
     const logs = logData.logs || [];
 
-    // Calculate unified security metrics
-    const totalAccounts = accounts.length;
+    // Calculate security metrics
     const totalLogins = logData.total || logs.length;
     const successCount = logs.filter((l) => l.status === 'SUCCESS').length;
     const failedCount = logs.filter((l) => l.status === 'FAILED').length;
     const uniqueOperators = new Set(logs.map((l) => l.accountId)).size;
 
     const roleCounts = {
-      ADMIN: accounts.filter((a) => a.type === 'ADMIN').length,
-      EDITOR: accounts.filter((a) => a.type === 'EDITOR').length,
-      MODERATOR: accounts.filter((a) => a.type === 'MODERATOR').length,
-      WORKER: accounts.filter((a) => a.type === 'WORKER').length,
-      VIEWER: accounts.filter((a) => a.type === 'VIEWER').length,
+      ADMIN: logs.filter((l) => l.type === 'ADMIN').length,
+      EDITOR: logs.filter((l) => l.type === 'EDITOR').length,
+      MODERATOR: logs.filter((l) => l.type === 'MODERATOR').length,
+      WORKER: logs.filter((l) => l.type === 'WORKER').length,
+      VIEWER: logs.filter((l) => l.type === 'VIEWER').length,
     };
 
     if (!wantsHtml) {
       return res.status(200).json({
         success: true,
-        service: 'Zaraz Server Authentication & Audit Trail (Unified Vault)',
+        service: 'Zaraz Server Authentication Audit Trail',
         database: 'SERVER_ACC',
-        collection: 'accounts',
-        unified: true,
+        collection: 'login_logs',
         operator: operator.name || operator.id,
         operatorType: operator.type,
         stats: {
-          totalAccounts,
-          totalLogins,
+          total: totalLogins,
           success: successCount,
           failed: failedCount,
           uniqueOperators,
           byRole: roleCounts,
         },
-        accounts,
         pagination: {
           page: logData.page,
           limit: logData.limit,
@@ -809,54 +802,8 @@ export const renderServerLoginLogsPage = async (req, res) => {
       VIEWER: 'background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.35);',
     };
 
-    const accountsRows = accounts.length === 0
-      ? `<tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">No operator accounts found in SERVER_ACC.accounts.</td></tr>`
-      : accounts
-          .map((acc) => {
-            const rStyle = roleStyleMap[acc.type] || roleStyleMap.ADMIN;
-            const lastLog = acc.lastLoginAt ? new Date(acc.lastLoginAt) : null;
-            return `
-            <tr>
-              <td>
-                <div style="font-weight: 700; color: #fff;">${escapeHtml(acc.name || acc.id)}</div>
-                <div style="font-size: 0.72rem; color: var(--muted); font-family: 'JetBrains Mono', monospace;">id: ${escapeHtml(acc.id)}</div>
-              </td>
-              <td>
-                <span class="badge-pill" style="${rStyle} font-weight: 800; letter-spacing: 0.04em;">
-                  ${escapeHtml(acc.type)}
-                </span>
-              </td>
-              <td>
-                <span class="badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.35);">
-                  ● Active
-                </span>
-              </td>
-              <td>
-                <strong style="color: #38bdf8; font-size: 0.95rem;">${acc.loginCount || acc.logsCount || 0}</strong>
-                <span style="font-size: 0.7rem; color: var(--muted);"> events</span>
-              </td>
-              <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: #cbd5e1;">
-                ${lastLog ? `${lastLog.toLocaleDateString()} ${lastLog.toLocaleTimeString()}` : '—'}
-              </td>
-              <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: var(--muted);">
-                ${escapeHtml(acc.lastLoginIp || '—')}
-              </td>
-              <td style="text-align: right;">
-                <button
-                  type="button"
-                  class="btn btn-secondary btn-sm"
-                  onclick="filterByAccount('${escapeHtml(acc.id)}')"
-                  title="Filter audit logs below for ${escapeHtml(acc.name || acc.id)}"
-                >
-                  🔍 View Logs (${acc.logsCount || 0})
-                </button>
-              </td>
-            </tr>`;
-          })
-          .join('');
-
     const logRows = logs.length === 0
-      ? `<tr><td colspan="6" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">No login events recorded in SERVER_ACC.accounts yet.</td></tr>`
+      ? `<tr><td colspan="6" style="text-align: center; padding: 2.5rem; color: var(--text-muted);">No login events recorded in SERVER_ACC.login_logs yet.</td></tr>`
       : logs
           .map((item) => {
             const isSuccess = item.status === 'SUCCESS';
@@ -867,7 +814,7 @@ export const renderServerLoginLogsPage = async (req, res) => {
             const logDate = item.loggedAt ? new Date(item.loggedAt) : new Date();
 
             return `
-            <tr class="log-row" data-status="${item.status}" data-type="${item.type}" data-account="${escapeHtml(item.accountId)}" data-operator="${escapeHtml(item.accountId)} ${escapeHtml(item.name)} ${escapeHtml(item.ip)}">
+            <tr class="log-row" data-status="${item.status}" data-type="${item.type}" data-operator="${escapeHtml(item.accountId)} ${escapeHtml(item.name)} ${escapeHtml(item.ip)}">
               <td>
                 <div style="font-weight: 700; color: #fff;">${escapeHtml(item.name || item.accountId)}</div>
                 <div style="font-size: 0.72rem; color: var(--muted); font-family: 'JetBrains Mono', monospace;">id: ${escapeHtml(item.accountId)}</div>
@@ -903,12 +850,12 @@ export const renderServerLoginLogsPage = async (req, res) => {
     const htmlContent = `
       <div class="page-header">
         <div class="page-title">
-          <h2>🛡️ SERVER_ACC: Accounts &amp; Login Audit Logs</h2>
-          <p>Unified Storage in MongoDB Atlas: Accounts &amp; Login Logs combined in one collection (<code>SERVER_ACC.accounts</code>)</p>
+          <h2>🛡️ Server Operator Login Audit Logs</h2>
+          <p>Isolated Security Audit Collection in MongoDB Atlas (<code>SERVER_ACC.login_logs</code>)</p>
         </div>
         <div style="display: flex; gap: 0.6rem; align-items: center;">
-          <span class="badge-pill" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); font-weight: 800;">
-            UNIFIED VAULT: SERVER_ACC.accounts
+          <span class="badge-pill" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); font-weight: 800;">
+            ADMIN CLEARANCE ACTIVE
           </span>
           <a href="/server-logs?format=json" target="_blank" class="btn btn-secondary btn-sm">📄 Raw JSON</a>
         </div>
@@ -917,14 +864,9 @@ export const renderServerLoginLogsPage = async (req, res) => {
       <!-- Metrics Cards -->
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
         <div class="card" style="padding: 1.25rem;">
-          <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">Operator Accounts</div>
-          <div style="font-size: 1.8rem; font-weight: 800; color: #38bdf8; margin-top: 0.25rem;">${totalAccounts}</div>
-          <div style="font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem;">In SERVER_ACC.accounts</div>
-        </div>
-        <div class="card" style="padding: 1.25rem;">
           <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">Total Login Events</div>
           <div style="font-size: 1.8rem; font-weight: 800; color: #fff; margin-top: 0.25rem;">${totalLogins}</div>
-          <div style="font-size: 0.72rem; color: #34d399; margin-top: 0.2rem;">Embedded in account docs</div>
+          <div style="font-size: 0.72rem; color: #34d399; margin-top: 0.2rem;">In SERVER_ACC.login_logs</div>
         </div>
         <div class="card" style="padding: 1.25rem;">
           <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">Successful Logins</div>
@@ -936,55 +878,22 @@ export const renderServerLoginLogsPage = async (req, res) => {
           <div style="font-size: 1.8rem; font-weight: 800; color: #f87171; margin-top: 0.25rem;">${failedCount}</div>
           <div style="font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem;">Blocked Credential Inputs</div>
         </div>
-      </div>
-
-      <!-- Section 1: Server Operator Accounts Directory (Unified) -->
-      <div class="section-title" style="margin-bottom: 0.85rem; display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff;">
-          👤 Server Accounts Vault (MongoDB: <code>SERVER_ACC.accounts</code>)
-        </h3>
-        <span style="font-size: 0.75rem; color: #34d399;">
-          ● ${totalAccounts} Operator Accounts Configured
-        </span>
-      </div>
-      <div class="table-card" style="margin-bottom: 2rem;">
-        <table>
-          <thead>
-            <tr>
-              <th>Operator Name &amp; ID</th>
-              <th>Account Type</th>
-              <th>Status</th>
-              <th>Total Logins</th>
-              <th>Last Login</th>
-              <th>Last IP</th>
-              <th style="text-align: right;">History Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${accountsRows}
-          </tbody>
-        </table>
-      </div>
-
-      <!-- Section 2: Unified Real-Time Login Audit Trail -->
-      <div id="auditLogsSection" class="section-title" style="margin-bottom: 0.85rem; display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff;">
-          📜 Login Audit Trail (Aggregated from <code>account.login_logs</code>)
-        </h3>
-        <div style="display: flex; gap: 0.5rem; align-items: center;">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="resetAllFilters()">Reset Filters</button>
+        <div class="card" style="padding: 1.25rem;">
+          <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">Unique Operators</div>
+          <div style="font-size: 1.8rem; font-weight: 800; color: #38bdf8; margin-top: 0.25rem;">${uniqueOperators}</div>
+          <div style="font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem;">Distinct Account IDs</div>
         </div>
       </div>
 
       <!-- Role Distribution Matrix -->
-      <div class="card" style="margin-bottom: 1.5rem; padding: 1.25rem;">
+      <div class="card" style="margin-bottom: 1.75rem; padding: 1.25rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.85rem;">
           <div>
             <h4 style="font-size: 0.95rem; font-weight: 800; color: #fff;">Server Account Type Distribution</h4>
-            <p style="font-size: 0.75rem; color: var(--muted);">Registered operator accounts across the 5 backend roles</p>
+            <p style="font-size: 0.75rem; color: var(--muted);">Logins segmented across the 5 backend operator roles</p>
           </div>
           <div style="font-size: 0.72rem; color: #34d399; font-family: 'JetBrains Mono', monospace;">
-            Vault: SERVER_ACC.accounts
+            Vault: SERVER_ACC.login_logs
           </div>
         </div>
         <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
@@ -1056,7 +965,6 @@ export const renderServerLoginLogsPage = async (req, res) => {
       <script>
         var currentStatusFilter = 'all';
         var currentTypeFilter = 'all';
-        var currentAccountFilter = '';
 
         function applyFilters() {
           var searchVal = (document.getElementById('logSearchInput').value || '').toLowerCase().trim();
@@ -1065,15 +973,13 @@ export const renderServerLoginLogsPage = async (req, res) => {
           rows.forEach(function(row) {
             var status = row.getAttribute('data-status') || '';
             var type = row.getAttribute('data-type') || '';
-            var account = row.getAttribute('data-account') || '';
             var opText = (row.getAttribute('data-operator') || '').toLowerCase();
 
             var matchesStatus = (currentStatusFilter === 'all') || (status === currentStatusFilter);
             var matchesType = (currentTypeFilter === 'all') || (type === currentTypeFilter);
-            var matchesAccount = !currentAccountFilter || (account === currentAccountFilter);
             var matchesSearch = !searchVal || opText.indexOf(searchVal) !== -1;
 
-            if (matchesStatus && matchesType && matchesAccount && matchesSearch) {
+            if (matchesStatus && matchesType && matchesSearch) {
               row.style.display = '';
             } else {
               row.style.display = 'none';
@@ -1103,34 +1009,7 @@ export const renderServerLoginLogsPage = async (req, res) => {
           applyFilters();
         }
 
-        function filterByAccount(accountId) {
-          currentAccountFilter = accountId;
-          document.getElementById('logSearchInput').value = accountId;
-          applyFilters();
-          var section = document.getElementById('auditLogsSection');
-          if (section) {
-            section.scrollIntoView({ behavior: 'smooth' });
-          }
-        }
-
-        function resetAllFilters() {
-          currentStatusFilter = 'all';
-          currentTypeFilter = 'all';
-          currentAccountFilter = '';
-          document.getElementById('logSearchInput').value = '';
-          document.querySelectorAll('.filter-status-btn').forEach(function(b, idx) {
-            if (idx === 0) { b.classList.add('btn-emerald'); b.classList.remove('btn-secondary'); }
-            else { b.classList.remove('btn-emerald'); b.classList.add('btn-secondary'); }
-          });
-          document.querySelectorAll('.filter-type-btn').forEach(function(b, idx) {
-            if (idx === 0) { b.classList.add('btn-emerald'); b.classList.remove('btn-secondary'); }
-            else { b.classList.remove('btn-emerald'); b.classList.add('btn-secondary'); }
-          });
-          applyFilters();
-        }
-
         function filterBySearch() {
-          currentAccountFilter = '';
           applyFilters();
         }
       </script>
@@ -1138,7 +1017,7 @@ export const renderServerLoginLogsPage = async (req, res) => {
 
     return res.status(200).send(
       renderBaseLayout({
-        title: 'Server Accounts & Login Logs',
+        title: 'Server Login Audit Logs',
         activeNav: 'server-logs',
         serverAccount: operator,
         jsonUrl: '/server-logs?format=json',
@@ -1151,7 +1030,7 @@ export const renderServerLoginLogsPage = async (req, res) => {
     if (!wantsHtml) {
       return res.status(500).json({
         success: false,
-        message: 'Failed to retrieve unified server accounts and login audit logs.',
+        message: 'Failed to retrieve login audit logs from SERVER_ACC.login_logs.',
         error: error.message,
       });
     }
