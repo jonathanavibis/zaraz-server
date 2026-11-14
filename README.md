@@ -87,26 +87,3 @@ To maintain optimal isolation and security:
 |:---|:---|:---|:---|
 | `GET` | `/health` | Public | Server uptime, memory consumption, Node.js version, and database statuses |
 | `GET` / `POST` | `/seed` | Public | Seed default Daraz-inspired catalog and demo accounts into MongoDB Atlas |
-
----
-
-## 🏃 Quick Start
-
-### 1. Environment Configuration (`.env`)
-```env
-PORT=5000
-MONGODB_URI=mongodb+srv://zaraz-admin:6681CptbyrN76kua@cluster0.qlpxs02.mongodb.net/zaraz_db?retryWrites=true&w=majority
-AUTH_DB_NAME=zaraz_auth_db
-AUTH_MONGODB_URI=mongodb+srv://zaraz-admin:6681CptbyrN76kua@cluster0.qlpxs02.mongodb.net/zaraz_auth_db?retryWrites=true&w=majority
-JWT_SECRET=EQIm8GWsjGHQY0jf0Ixf7Djjh6CRxFCZ
-CLIENT_URL=http://localhost:3000
-FRONTEND_URL=http://localhost:3000
-```
-
-### 2. Start the Server
-```bash
-cd D:\Project\zaraz-server
-npm run dev
-```
-
-Visit the dashboard in your browser: **http://localhost:5000**
