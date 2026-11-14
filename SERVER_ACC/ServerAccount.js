@@ -147,11 +147,13 @@ export const touchServerAccountLogin = async (docId) => {
 
 export const getLoginLogsCollection = async () => {
   const nativeDb = await initServerAccVault();
-  return nativeDb.collection(SERVER_LOGIN_LOGS_COLLECTION);
+  return nativeDb.collection(SERVER_ACC_COLLECTION);
 };
 
 /**
- * Records a server operator login event (both successful and failed) in SERVER_ACC.login_logs.
+ * Records a server operator login event (both successful and failed) directly
+ * inside the unified `SERVER_ACC.accounts` document matching the operator.
+ * Accounts and login logs are stored together in one single collection.
  */
 export const recordServerLoginLog = async ({
   accountId,
@@ -163,18 +165,74 @@ export const recordServerLoginLog = async ({
   failureReason = '',
 }) => {
   try {
-    const collection = await getLoginLogsCollection();
+    const collection = await getAccountsCollection();
+    const normalizedType = normalizeServerAccType(type);
     const logDoc = {
+      logId: new mongoose.Types.ObjectId().toString(),
       accountId: String(accountId || 'UNKNOWN'),
       name: String(name || accountId || 'Unknown Operator'),
-      type: normalizeServerAccType(type),
+      type: normalizedType,
       ip: String(ip || '127.0.0.1'),
       userAgent: String(userAgent || 'Unknown Device'),
       status: status === 'SUCCESS' ? 'SUCCESS' : 'FAILED',
       failureReason: String(failureReason || ''),
       loggedAt: new Date(),
     };
-    await collection.insertOne(logDoc);
+
+    const targetAccount = await findServerAccountByIdentifier(String(accountId));
+
+    if (targetAccount) {
+      await collection.updateOne(
+        { _id: targetAccount._id },
+        {
+          $set: {
+            lastLoginAt: new Date(),
+            lastLoginIp: String(ip || '127.0.0.1'),
+          },
+          $inc: {
+            loginCount: 1,
+            ...(status === 'SUCCESS' ? { successLogins: 1 } : { failedLogins: 1 }),
+          },
+          $push: {
+            login_logs: {
+              $each: [logDoc],
+              $position: 0,
+              $slice: 150, // Retain latest 150 login events per account
+            },
+          },
+        }
+      );
+    } else {
+      // Store failed attempts for non-existent identifiers in a unified audit bucket document in accounts
+      await collection.updateOne(
+        { id: '__unregistered_attempts__' },
+        {
+          $setOnInsert: {
+            id: '__unregistered_attempts__',
+            name: 'Unregistered Identifier Attempts',
+            type: 'VIEWER',
+            role: 'VIEWER',
+            isActive: false,
+            isSystemBucket: true,
+            createdAt: new Date(),
+          },
+          $set: {
+            lastAttemptAt: new Date(),
+            lastAttemptIp: String(ip || '127.0.0.1'),
+          },
+          $inc: { attemptCount: 1 },
+          $push: {
+            login_logs: {
+              $each: [logDoc],
+              $position: 0,
+              $slice: 150,
+            },
+          },
+        },
+        { upsert: true }
+      );
+    }
+
     return logDoc;
   } catch (err) {
     console.error('[recordServerLoginLog Error]:', err.message);
@@ -183,26 +241,58 @@ export const recordServerLoginLog = async ({
 };
 
 /**
- * Retrieves audit login logs from SERVER_ACC.login_logs (Admin Only).
+ * Retrieves audit login logs by aggregating embedded `login_logs` arrays
+ * from all documents in the unified `SERVER_ACC.accounts` collection.
  */
-export const getServerLoginLogs = async ({ limit = 50, page = 1 } = {}) => {
-  const collection = await getLoginLogsCollection();
-  const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 200);
+export const getServerLoginLogs = async ({ limit = 100, page = 1 } = {}) => {
+  const collection = await getAccountsCollection();
+  const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 100, 1), 300);
   const parsedPage = Math.max(parseInt(page, 10) || 1, 1);
   const skip = (parsedPage - 1) * parsedLimit;
 
-  const [total, logs] = await Promise.all([
-    collection.countDocuments(),
-    collection.find({}).sort({ loggedAt: -1 }).skip(skip).limit(parsedLimit).toArray(),
-  ]);
+  const accounts = await collection.find({}).toArray();
+
+  let allLogs = [];
+  for (const acc of accounts) {
+    if (Array.isArray(acc.login_logs)) {
+      for (const item of acc.login_logs) {
+        allLogs.push({
+          logId: item.logId || item._id ? String(item.logId || item._id) : undefined,
+          accountId: item.accountId || acc.id || acc.email || String(acc._id),
+          name: item.name || acc.name || 'Server Operator',
+          type: normalizeServerAccType(item.type || acc.type || acc.role),
+          ip: item.ip || '127.0.0.1',
+          userAgent: item.userAgent || 'Unknown Device',
+          status: item.status === 'SUCCESS' ? 'SUCCESS' : 'FAILED',
+          failureReason: item.failureReason || '',
+          loggedAt: item.loggedAt ? new Date(item.loggedAt) : new Date(),
+        });
+      }
+    }
+  }
+
+  // Sort newest first
+  allLogs.sort((a, b) => new Date(b.loggedAt) - new Date(a.loggedAt));
+
+  const total = allLogs.length;
+  const pagedLogs = allLogs.slice(skip, skip + parsedLimit);
 
   return {
     total,
     page: parsedPage,
     limit: parsedLimit,
-    totalPages: Math.ceil(total / parsedLimit),
-    logs,
+    totalPages: Math.ceil(total / parsedLimit) || 1,
+    logs: pagedLogs,
   };
+};
+
+/**
+ * Retrieves all registered server operator accounts from `SERVER_ACC.accounts`.
+ */
+export const getAllServerAccounts = async () => {
+  const collection = await getAccountsCollection();
+  const docs = await collection.find({ isSystemBucket: { $ne: true } }).toArray();
+  return docs.map(sanitizeServerAccount).filter(Boolean);
 };
 
 /**
@@ -210,7 +300,7 @@ export const getServerLoginLogs = async ({ limit = 50, page = 1 } = {}) => {
  * Normalizes account type (ADMIN, EDITOR, MODERATOR, WORKER, VIEWER) and maps permission flags.
  */
 export const sanitizeServerAccount = (doc) => {
-  if (!doc) return null;
+  if (!doc || doc.isSystemBucket === true) return null;
   const identifier =
     doc.id ||
     doc.accountId ||
@@ -221,6 +311,7 @@ export const sanitizeServerAccount = (doc) => {
     String(doc._id);
 
   const type = normalizeServerAccType(doc.type || doc.role);
+  const logs = Array.isArray(doc.login_logs) ? doc.login_logs : [];
 
   return {
     _id: String(doc._id),
@@ -229,7 +320,11 @@ export const sanitizeServerAccount = (doc) => {
     type: type,
     role: type,
     isActive: doc.isActive !== false,
-    lastLoginAt: doc.lastLoginAt || null,
+    lastLoginAt: doc.lastLoginAt || logs[0]?.loggedAt || null,
+    lastLoginIp: doc.lastLoginIp || logs[0]?.ip || '—',
+    loginCount: doc.loginCount || logs.length || 0,
+    logsCount: logs.length,
+    recentLogs: logs.slice(0, 5),
     database: SERVER_ACC_DB_NAME,
     collection: SERVER_ACC_COLLECTION,
     permissions: {
