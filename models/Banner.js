@@ -1,4 +1,7 @@
 import mongoose from 'mongoose';
+import MysqlBanner from './mysql/bannerModel.js';
+
+const isMysqlMode = () => (process.env.DB_TYPE || 'mysql').toLowerCase() === 'mysql';
 
 const bannerSchema = new mongoose.Schema(
   {
@@ -44,5 +47,28 @@ const bannerSchema = new mongoose.Schema(
   }
 );
 
-const Banner = mongoose.models.Banner || mongoose.model('Banner', bannerSchema);
+const MongooseBanner = mongoose.models.Banner || mongoose.model('Banner', bannerSchema);
+
+const Banner = new Proxy(function () {}, {
+  get(target, prop) {
+    if (isMysqlMode() && MysqlBanner[prop]) {
+      return MysqlBanner[prop];
+    }
+    const val = MongooseBanner[prop];
+    return typeof val === 'function' ? val.bind(MongooseBanner) : val;
+  },
+  construct(target, args) {
+    if (isMysqlMode()) {
+      return MysqlBanner.create(...args);
+    }
+    return new MongooseBanner(...args);
+  },
+  apply(target, thisArg, args) {
+    if (isMysqlMode()) {
+      return MysqlBanner.create(...args);
+    }
+    return MongooseBanner.apply(thisArg, args);
+  },
+});
+
 export default Banner;

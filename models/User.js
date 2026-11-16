@@ -1,6 +1,9 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { getAuthDb } from '../config/db.js';
+import MysqlUser from './mysql/userModel.js';
+
+const isMysqlMode = () => (process.env.DB_TYPE || 'mysql').toLowerCase() === 'mysql';
 
 const userSchema = new mongoose.Schema(
   {
@@ -79,24 +82,31 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-// Retrieve User model bound strictly to the dedicated 'zaraz_auth_db' database
 export const getUserModel = () => {
   const authDb = getAuthDb();
   return authDb.models.User || authDb.model('User', userSchema);
 };
 
-// Proxy export: Automatically forwards all Mongoose model operations to zaraz_auth_db.User
 const User = new Proxy(function () {}, {
   get(target, prop) {
+    if (isMysqlMode() && MysqlUser[prop]) {
+      return MysqlUser[prop];
+    }
     const Model = getUserModel();
     const value = Model[prop];
     return typeof value === 'function' ? value.bind(Model) : value;
   },
   construct(target, args) {
+    if (isMysqlMode()) {
+      return MysqlUser.create(...args);
+    }
     const Model = getUserModel();
     return new Model(...args);
   },
   apply(target, thisArg, args) {
+    if (isMysqlMode()) {
+      return MysqlUser.create(...args);
+    }
     const Model = getUserModel();
     return Model.apply(thisArg, args);
   },

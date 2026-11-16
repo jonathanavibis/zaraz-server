@@ -1,4 +1,7 @@
 import mongoose from 'mongoose';
+import MysqlCategory from './mysql/categoryModel.js';
+
+const isMysqlMode = () => (process.env.DB_TYPE || 'mysql').toLowerCase() === 'mysql';
 
 const categorySchema = new mongoose.Schema(
   {
@@ -43,5 +46,28 @@ const categorySchema = new mongoose.Schema(
   }
 );
 
-const Category = mongoose.models.Category || mongoose.model('Category', categorySchema);
+const MongooseCategory = mongoose.models.Category || mongoose.model('Category', categorySchema);
+
+const Category = new Proxy(function () {}, {
+  get(target, prop) {
+    if (isMysqlMode() && MysqlCategory[prop]) {
+      return MysqlCategory[prop];
+    }
+    const val = MongooseCategory[prop];
+    return typeof val === 'function' ? val.bind(MongooseCategory) : val;
+  },
+  construct(target, args) {
+    if (isMysqlMode()) {
+      return MysqlCategory.create(...args);
+    }
+    return new MongooseCategory(...args);
+  },
+  apply(target, thisArg, args) {
+    if (isMysqlMode()) {
+      return MysqlCategory.create(...args);
+    }
+    return MongooseCategory.apply(thisArg, args);
+  },
+});
+
 export default Category;

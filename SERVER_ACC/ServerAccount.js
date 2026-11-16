@@ -8,6 +8,18 @@ import {
   SERVER_LOGIN_LOGS_COLLECTION,
   SERVER_ACC_DB_NAME,
 } from './serverAccDb.js';
+import {
+  findServerAccountByIdentifierMysql,
+  verifyAccountPasswordMysql,
+  touchServerAccountLoginMysql,
+  recordServerLoginLogMysql,
+  getServerLoginLogsMysql,
+  getAllServerAccountsMysql,
+  deleteServerAccountMysql,
+  createServerAccountMysql,
+} from './serverAccountMysql.js';
+
+const isMysqlMode = () => (process.env.DB_TYPE || 'mysql').toLowerCase() === 'mysql';
 
 export const SERVER_ACC_TYPES = {
   ADMIN: 'ADMIN',
@@ -60,28 +72,21 @@ const timingSafeStringCompare = (a, b) => {
   return crypto.timingSafeEqual(hashA, hashB);
 };
 
-/**
- * Retrieve raw MongoDB collection handle for SERVER_ACC.accounts so manually
- * created documents in MongoDB Atlas/Compass work with flexible field names.
- */
 export const getAccountsCollection = async () => {
   const nativeDb = await initServerAccVault();
   return nativeDb.collection(SERVER_ACC_COLLECTION);
 };
 
-/**
- * Mongoose model bound strictly to SERVER_ACC.accounts.
- */
 export const getServerAccountModel = () => {
   const db = getServerAccDb();
   return db.models.ServerAccount || db.model('ServerAccount', serverAccountSchema);
 };
 
-/**
- * Finds a backend server account in SERVER_ACC.accounts by any identifier field
- * (`id`, `accountId`, `userId`, `adminId`, `username`, `email`, or string `_id`).
- */
 export const findServerAccountByIdentifier = async (rawIdentifier) => {
+  if (isMysqlMode()) {
+    return findServerAccountByIdentifierMysql(rawIdentifier);
+  }
+
   if (!rawIdentifier || typeof rawIdentifier !== 'string') return null;
   const trimmed = rawIdentifier.trim();
   if (!trimmed) return null;
@@ -97,10 +102,11 @@ export const findServerAccountByIdentifier = async (rawIdentifier) => {
   return collection.findOne({ $or: orConditions });
 };
 
-/**
- * Finds a backend server account document by MongoDB `_id` (ObjectId or string).
- */
 export const findServerAccountById = async (docId) => {
+  if (isMysqlMode()) {
+    return findServerAccountByIdentifierMysql(docId);
+  }
+
   if (!docId) return null;
   const collection = await getAccountsCollection();
 
@@ -112,12 +118,11 @@ export const findServerAccountById = async (docId) => {
   return collection.findOne({ $or: queries });
 };
 
-/**
- * Verifies entered password against stored `password` or `pass` field.
- * Supports both bcrypt hashes ($2a$/$2b$/$2y$) and plain-text values inserted
- * directly via MongoDB Atlas / Compass.
- */
 export const verifyAccountPassword = async (accountDoc, enteredPassword) => {
+  if (isMysqlMode()) {
+    return verifyAccountPasswordMysql(accountDoc, enteredPassword);
+  }
+
   if (!accountDoc || typeof enteredPassword !== 'string' || !enteredPassword) {
     return false;
   }
@@ -134,15 +139,28 @@ export const verifyAccountPassword = async (accountDoc, enteredPassword) => {
   return timingSafeStringCompare(enteredPassword, stored);
 };
 
-/**
- * Marks last successful login timestamp on the MongoDB SERVER_ACC document.
- */
-export const touchServerAccountLogin = async (docId) => {
+export const touchServerAccountLogin = async (docId, meta = {}) => {
   if (!docId) return;
+
+  if (isMysqlMode()) {
+    return touchServerAccountLoginMysql(typeof docId === 'object' ? docId : { id: docId }, meta);
+  }
+
   const collection = await getAccountsCollection();
+  const queries = [{ _id: docId }, { _id: String(docId) }, { id: String(docId) }];
+  if (mongoose.Types.ObjectId.isValid(docId)) {
+    queries.unshift({ _id: new mongoose.Types.ObjectId(String(docId)) });
+  }
+
   await collection.updateOne(
-    { _id: docId },
-    { $set: { lastLoginAt: new Date() } }
+    { $or: queries },
+    {
+      $set: {
+        lastLoginAt: new Date(),
+        lastLoginIp: meta?.ip || '127.0.0.1',
+      },
+      $inc: { loginCount: 1, successLogins: 1 },
+    }
   );
 };
 
@@ -151,25 +169,22 @@ export const getLoginLogsCollection = async () => {
   return nativeDb.collection(SERVER_LOGIN_LOGS_COLLECTION);
 };
 
-/**
- * Records a server operator login event (both successful and failed) directly
- * inside the separate `SERVER_ACC.login_logs` collection.
- */
-export const recordServerLoginLog = async ({
-  accountId,
-  name = '',
-  type = '',
-  ip = '',
-  userAgent = '',
-  status = 'SUCCESS',
-  failureReason = '',
-}) => {
+export const recordServerLoginLog = async (logPayload = {}) => {
+  if (isMysqlMode()) {
+    return recordServerLoginLogMysql(logPayload);
+  }
+
   try {
     const logsCollection = await getLoginLogsCollection();
     const accountsCollection = await getAccountsCollection();
-    const targetAccount = accountId ? await findServerAccountByIdentifier(String(accountId)) : null;
 
-    // Resolve accurate operator type and name strictly from target account in SERVER_ACC.accounts if available
+    const { accountId, name, type, ip, userAgent, status, failureReason } = logPayload;
+
+    let targetAccount = null;
+    if (accountId) {
+      targetAccount = await findServerAccountByIdentifier(String(accountId));
+    }
+
     const resolvedType = targetAccount
       ? normalizeServerAccType(targetAccount.type || targetAccount.role)
       : (type ? normalizeServerAccType(type) : 'VIEWER');
@@ -191,7 +206,6 @@ export const recordServerLoginLog = async ({
 
     await logsCollection.insertOne(logDoc);
 
-    // Also update last login info on the account in SERVER_ACC.accounts
     if (targetAccount) {
       await accountsCollection.updateOne(
         { _id: targetAccount._id },
@@ -214,12 +228,18 @@ export const recordServerLoginLog = async ({
   }
 };
 
-/**
- * Retrieves audit login logs directly from the separate `SERVER_ACC.login_logs` collection.
- * Dynamically reconciles operator types with registered accounts to guarantee the tag
- * always accurately displays the operator's actual assigned role (e.g. VIEWER).
- */
 export const getServerLoginLogs = async ({ limit = 100, page = 1 } = {}) => {
+  if (isMysqlMode()) {
+    const logs = await getServerLoginLogsMysql({ limit });
+    return {
+      total: logs.length,
+      page: 1,
+      limit,
+      totalPages: 1,
+      logs,
+    };
+  }
+
   const [logsCollection, accountsCollection] = await Promise.all([
     getLoginLogsCollection(),
     getAccountsCollection(),
@@ -235,7 +255,6 @@ export const getServerLoginLogs = async ({ limit = 100, page = 1 } = {}) => {
     accountsCollection.find({}).toArray(),
   ]);
 
-  // Build account lookup map to ensure logs dynamically reflect the operator's current account type & name
   const accountTypeMap = new Map();
   for (const acc of accounts) {
     const accType = normalizeServerAccType(acc.type || acc.role);
@@ -268,19 +287,26 @@ export const getServerLoginLogs = async ({ limit = 100, page = 1 } = {}) => {
   };
 };
 
-/**
- * Retrieves all registered server operator accounts from `SERVER_ACC.accounts`.
- */
 export const getAllServerAccounts = async () => {
+  if (isMysqlMode()) {
+    const accounts = await getAllServerAccountsMysql();
+    return accounts.map(sanitizeServerAccount).filter(Boolean);
+  }
+
   const collection = await getAccountsCollection();
   const docs = await collection.find({ isSystemBucket: { $ne: true } }).toArray();
   return docs.map(sanitizeServerAccount).filter(Boolean);
 };
 
-/**
- * Strips sensitive credential fields before attaching to request or JSON response.
- * Normalizes account type (ADMIN, EDITOR, MODERATOR, WORKER, VIEWER) and maps permission flags.
- */
+export const deleteServerAccount = async (id) => {
+  if (isMysqlMode()) {
+    return deleteServerAccountMysql(id);
+  }
+  const collection = await getAccountsCollection();
+  const res = await collection.deleteOne({ $or: [{ id }, { _id: id }] });
+  return res.deletedCount > 0;
+};
+
 export const sanitizeServerAccount = (doc) => {
   if (!doc || doc.isSystemBucket === true) return null;
   const identifier =
@@ -295,7 +321,7 @@ export const sanitizeServerAccount = (doc) => {
   const type = normalizeServerAccType(doc.type || doc.role);
 
   return {
-    _id: String(doc._id),
+    _id: String(doc._id || identifier),
     id: String(identifier),
     name: doc.name || String(identifier),
     type: type,
@@ -304,8 +330,8 @@ export const sanitizeServerAccount = (doc) => {
     lastLoginAt: doc.lastLoginAt || null,
     lastLoginIp: doc.lastLoginIp || '—',
     loginCount: doc.loginCount || 0,
-    database: SERVER_ACC_DB_NAME,
-    collection: SERVER_ACC_COLLECTION,
+    database: isMysqlMode() ? 'zaraz_db (XAMPP MySQL)' : SERVER_ACC_DB_NAME,
+    collection: isMysqlMode() ? 'server_accounts' : SERVER_ACC_COLLECTION,
     permissions: {
       canDeleteUsers: type === 'ADMIN',
       canViewLoginLogs: type === 'ADMIN',

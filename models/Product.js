@@ -1,4 +1,7 @@
 import mongoose from 'mongoose';
+import MysqlProduct from './mysql/productModel.js';
+
+const isMysqlMode = () => (process.env.DB_TYPE || 'mysql').toLowerCase() === 'mysql';
 
 const productSchema = new mongoose.Schema(
   {
@@ -114,11 +117,33 @@ const productSchema = new mongoose.Schema(
   }
 );
 
-// Indexes for fast searching and filtering
 productSchema.index({ title: 'text', brand: 'text', category: 'text' });
 productSchema.index({ categorySlug: 1 });
 productSchema.index({ isFlashSale: 1 });
 productSchema.index({ price: 1 });
 
-const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
+const MongooseProduct = mongoose.models.Product || mongoose.model('Product', productSchema);
+
+const Product = new Proxy(function () {}, {
+  get(target, prop) {
+    if (isMysqlMode() && MysqlProduct[prop]) {
+      return MysqlProduct[prop];
+    }
+    const val = MongooseProduct[prop];
+    return typeof val === 'function' ? val.bind(MongooseProduct) : val;
+  },
+  construct(target, args) {
+    if (isMysqlMode()) {
+      return MysqlProduct.create(...args);
+    }
+    return new MongooseProduct(...args);
+  },
+  apply(target, thisArg, args) {
+    if (isMysqlMode()) {
+      return MysqlProduct.create(...args);
+    }
+    return MongooseProduct.apply(thisArg, args);
+  },
+});
+
 export default Product;

@@ -25,8 +25,22 @@ import User from './models/User.js';
 
 dotenv.config();
 
-// Attempt immediate connection for local servers and initialize SERVER_ACC vault
-initServerAccVault().catch((err) => console.error('[Init DB error]:', err.message));
+const isMysqlMode = () => (process.env.DB_TYPE || 'mysql').toLowerCase() === 'mysql';
+
+// Attempt immediate connection for local servers and initialize database vault
+if (isMysqlMode()) {
+  import('./config/mysqlDb.js').then(({ testMysqlConnection }) => {
+    testMysqlConnection().then((res) => {
+      if (res.connected) {
+        console.log(`[XAMPP MySQL Connected]: ${res.host}:${res.port}/${res.database}`);
+      } else {
+        console.error(`[XAMPP MySQL Warning]: ${res.error}`);
+      }
+    });
+  });
+} else {
+  initServerAccVault().catch((err) => console.error('[Init DB error]:', err.message));
+}
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -60,10 +74,12 @@ app.use(
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Serverless DB connection middleware: ensures MongoDB & SERVER_ACC vault are connected
+// Database connection middleware: ensures database connection is ready
 app.use(async (req, res, next) => {
   try {
-    await initServerAccVault();
+    if (!isMysqlMode()) {
+      await initServerAccVault();
+    }
     next();
   } catch (dbErr) {
     console.error('[DB Middleware Error]:', dbErr.message);
@@ -623,7 +639,15 @@ app.get('/', async (req, res) => {
       service: 'Zaraz E-Commerce API Server (Daraz Inspired Green & Black Edition)',
       version: '1.0.0',
       serverOperator: req.serverAccount,
-      database: {
+      database: isMysqlMode() ? {
+        engine: 'XAMPP MySQL',
+        status: 'Connected to XAMPP MySQL',
+        host: `${process.env.MYSQL_HOST || '127.0.0.1'}:${process.env.MYSQL_PORT || 3306}`,
+        database: process.env.MYSQL_DATABASE || 'zaraz_db',
+        serverAccVault: 'zaraz_db.server_accounts',
+        phpMyAdmin: 'http://localhost/phpmyadmin/',
+      } : {
+        engine: 'MongoDB Atlas',
         status: 'Connected to MongoDB Atlas',
         serverAccVault: 'SERVER_ACC.accounts',
         authDatabase: 'zaraz_auth_db',
@@ -753,7 +777,13 @@ app.get(['/health', '/api/health'], (req, res) => {
   res.status(200).json({
     status: 'OK',
     service: 'zaraz-server',
-    databases: {
+    databaseEngine: isMysqlMode() ? 'XAMPP MySQL' : 'MongoDB Atlas',
+    databases: isMysqlMode() ? {
+      engine: 'MySQL (XAMPP)',
+      database: process.env.MYSQL_DATABASE || 'zaraz_db',
+      host: `${process.env.MYSQL_HOST || '127.0.0.1'}:${process.env.MYSQL_PORT || 3306}`,
+      phpMyAdmin: 'http://localhost/phpmyadmin/',
+    } : {
       auth: 'zaraz_auth_db',
       store: 'zaraz_db',
     },

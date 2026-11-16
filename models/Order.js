@@ -1,4 +1,7 @@
 import mongoose from 'mongoose';
+import MysqlOrder from './mysql/orderModel.js';
+
+const isMysqlMode = () => (process.env.DB_TYPE || 'mysql').toLowerCase() === 'mysql';
 
 const orderSchema = new mongoose.Schema(
   {
@@ -95,5 +98,28 @@ const orderSchema = new mongoose.Schema(
 orderSchema.index({ 'customer.email': 1 });
 orderSchema.index({ createdAt: -1 });
 
-const Order = mongoose.models.Order || mongoose.model('Order', orderSchema);
+const MongooseOrder = mongoose.models.Order || mongoose.model('Order', orderSchema);
+
+const Order = new Proxy(function () {}, {
+  get(target, prop) {
+    if (isMysqlMode() && MysqlOrder[prop]) {
+      return MysqlOrder[prop];
+    }
+    const val = MongooseOrder[prop];
+    return typeof val === 'function' ? val.bind(MongooseOrder) : val;
+  },
+  construct(target, args) {
+    if (isMysqlMode()) {
+      return MysqlOrder.create(...args);
+    }
+    return new MongooseOrder(...args);
+  },
+  apply(target, thisArg, args) {
+    if (isMysqlMode()) {
+      return MysqlOrder.create(...args);
+    }
+    return MongooseOrder.apply(thisArg, args);
+  },
+});
+
 export default Order;
