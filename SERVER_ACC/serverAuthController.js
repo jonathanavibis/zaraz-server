@@ -64,7 +64,7 @@ const buildLoginPageHtml = ({ redirectTarget = '/', errorMessage = '' } = {}) =>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Server Login • Zaraz Core Engine</title>
+  <title>Admin Panel Login • Zaraz Administrator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -305,17 +305,16 @@ const buildLoginPageHtml = ({ redirectTarget = '/', errorMessage = '' } = {}) =>
       <div class="brand-left">
         <div class="logo-pill">Z</div>
         <div>
-          <div class="brand-name">Zaraz Server Core</div>
-          <div class="brand-sub">${SERVER_ACC_DB_NAME}.${SERVER_ACC_COLLECTION}</div>
+          <div class="brand-name">Zaraz Admin Panel</div>
+          <div class="brand-sub">Administrator Portal</div>
         </div>
       </div>
       <span class="vault-badge">🔐 LOGIN ONLY</span>
     </div>
 
-    <h1 class="heading">Backend Access Login</h1>
+    <h1 class="heading">Admin Panel Login</h1>
     <p class="subheading">
-      Enter your server Account ID and Password configured in MongoDB
-      <code style="color:#34d399; font-family:'JetBrains Mono', monospace;">${SERVER_ACC_DB_NAME}</code>.
+      Enter your Administrator Account ID and Password.
       Self sign-up &amp; registration are disabled.
     </p>
 
@@ -335,7 +334,7 @@ const buildLoginPageHtml = ({ redirectTarget = '/', errorMessage = '' } = {}) =>
             id="identifier"
             name="identifier"
             class="form-control"
-            placeholder="Enter MongoDB SERVER_ACC ID"
+            placeholder="Enter Administrator ID / Username"
             autocomplete="username"
             required
             autofocus
@@ -649,11 +648,11 @@ export const getServerMe = (req, res) => {
 };
 
 /**
- * Explicitly blocks backend self sign-up / registration.
- * Accounts can ONLY be created directly inside MongoDB SERVER_ACC.accounts.
+ * Explicitly blocks Admin Panel self sign-up / registration.
+ * Accounts can ONLY be created directly by administrators or database management.
  */
 export const blockServerRegistration = (req, res) => {
-  const msg = `Sign-up & self-registration are disabled on Zaraz Backend. Create server credentials directly in MongoDB (${SERVER_ACC_DB_NAME}.${SERVER_ACC_COLLECTION}).`;
+  const msg = `Sign-up & self-registration are disabled on Zaraz Admin Panel. Contact your System Administrator for access.`;
 
   if (isHtmlRequest(req)) {
     return res.status(403).send(
@@ -745,7 +744,7 @@ export const renderServerLoginLogsPage = async (req, res) => {
 
     return res.status(403).json({
       success: false,
-      message: `Access Denied: Only ADMIN operators can access server login audit logs. Your current role is ${operator?.type || 'UNAUTHENTICATED'}.`,
+      message: `Access Denied: Only ADMIN administrators can access Admin Panel login audit logs. Your current role is ${operator?.type || 'UNAUTHENTICATED'}.`,
     });
   }
 
@@ -851,8 +850,8 @@ export const renderServerLoginLogsPage = async (req, res) => {
     const htmlContent = `
       <div class="page-header">
         <div class="page-title">
-          <h2>🛡️ Server Operator Login Audit Logs</h2>
-          <p>Isolated Security Audit Collection in MongoDB Atlas (<code>SERVER_ACC.login_logs</code>)</p>
+          <h2>🛡️ Administrator Login Audit Logs</h2>
+          <p>Administrator Login Audit &amp; Security Collection (<code>server_login_logs</code>)</p>
         </div>
         <div style="display: flex; gap: 0.6rem; align-items: center;">
           <span class="badge-pill" style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); font-weight: 800;">
@@ -867,7 +866,7 @@ export const renderServerLoginLogsPage = async (req, res) => {
         <div class="card" style="padding: 1.25rem;">
           <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">Total Login Events</div>
           <div style="font-size: 1.8rem; font-weight: 800; color: #fff; margin-top: 0.25rem;">${totalLogins}</div>
-          <div style="font-size: 0.72rem; color: #34d399; margin-top: 0.2rem;">In SERVER_ACC.login_logs</div>
+          <div style="font-size: 0.72rem; color: #34d399; margin-top: 0.2rem;">In server_login_logs</div>
         </div>
         <div class="card" style="padding: 1.25rem;">
           <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">Successful Logins</div>
@@ -880,9 +879,9 @@ export const renderServerLoginLogsPage = async (req, res) => {
           <div style="font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem;">Blocked Credential Inputs</div>
         </div>
         <div class="card" style="padding: 1.25rem;">
-          <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">Unique Operators</div>
+          <div style="font-size: 0.72rem; font-weight: 700; color: var(--muted); text-transform: uppercase;">Unique Administrators</div>
           <div style="font-size: 1.8rem; font-weight: 800; color: #38bdf8; margin-top: 0.25rem;">${uniqueOperators}</div>
-          <div style="font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem;">Distinct Account IDs</div>
+          <div style="font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem;">Distinct Administrator IDs</div>
         </div>
       </div>
 
@@ -890,11 +889,11 @@ export const renderServerLoginLogsPage = async (req, res) => {
       <div class="card" style="margin-bottom: 1.75rem; padding: 1.25rem;">
         <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 0.85rem;">
           <div>
-            <h4 style="font-size: 0.95rem; font-weight: 800; color: #fff;">Server Account Type Distribution</h4>
-            <p style="font-size: 0.75rem; color: var(--muted);">Logins segmented across the 5 backend operator roles</p>
+            <h4 style="font-size: 0.95rem; font-weight: 800; color: #fff;">Administrator Role Distribution</h4>
+            <p style="font-size: 0.75rem; color: var(--muted);">Logins segmented across the 5 administrator roles</p>
           </div>
           <div style="font-size: 0.72rem; color: #34d399; font-family: 'JetBrains Mono', monospace;">
-            Vault: SERVER_ACC.login_logs
+            Vault: server_login_logs
           </div>
         </div>
         <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
@@ -1018,7 +1017,7 @@ export const renderServerLoginLogsPage = async (req, res) => {
 
     return res.status(200).send(
       renderBaseLayout({
-        title: 'Server Login Audit Logs',
+        title: 'Administrator Login Audit Logs',
         activeNav: 'server-logs',
         serverAccount: operator,
         jsonUrl: '/server-logs?format=json',

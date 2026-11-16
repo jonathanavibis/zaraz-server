@@ -117,7 +117,7 @@ export const requireServerAdminSession = (req, res, next) => {
   return res.status(401).json({
     success: false,
     message:
-      'Backend authentication required. Log in with SERVER_ACC MongoDB credentials.',
+      'Administrator authentication required. Please log in to the Admin Panel.',
     loginUrl: '/login',
   });
 };
@@ -214,8 +214,8 @@ export const requireServerType = (...allowedTypes) => {
 export const requireServerAdmin = requireServerType('ADMIN');
 
 /**
- * Global gateway protecting ALL Backend Server Dashboard HTML pages and admin-only
- * backend mutations behind SERVER_ACC MongoDB authentication, while keeping public
+ * Global gateway protecting ALL Admin Panel Dashboard HTML pages and administrator-only
+ * mutations behind Administrator authentication, while keeping public
  * JSON APIs available for the Zaraz Shopping storefront.
  */
 export const protectBackendGateway = (req, res, next) => {
@@ -228,11 +228,11 @@ export const protectBackendGateway = (req, res, next) => {
     const method = req.method.toUpperCase();
     const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
 
-    // 1. VIEWER is strictly read-only across all backend mutation endpoints
+    // 1. VIEWER is strictly read-only across all Admin Panel mutation endpoints
     if (isMutation && operatorType === 'VIEWER') {
       return res.status(403).json({
         success: false,
-        message: 'Forbidden: VIEWER accounts have read-only access. Mutations are disabled.',
+        message: 'Forbidden: VIEWER accounts have read-only access. Mutations are disabled in Admin Panel.',
       });
     }
 
@@ -265,7 +265,7 @@ export const protectBackendGateway = (req, res, next) => {
     return res.status(401).json({
       success: false,
       message:
-        'Unauthorized: Backend admin action requires SERVER_ACC login.',
+        'Unauthorized: Administrator action requires Admin Panel login.',
       loginUrl: '/login',
     });
   }

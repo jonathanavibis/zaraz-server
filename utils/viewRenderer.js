@@ -39,8 +39,8 @@ export const renderBaseLayout = ({
 }) => {
   const isDashboard = activeNav === 'dashboard';
   const activeAccount = serverAccount || getCurrentServerAccount();
-  const displayName = escapeSafeHtml(activeAccount?.name || activeAccount?.id || 'Server Operator');
-  const displayId = escapeSafeHtml(activeAccount?.id || 'SERVER_ACC');
+  const displayName = escapeSafeHtml(activeAccount?.name || activeAccount?.id || 'Administrator');
+  const displayId = escapeSafeHtml(activeAccount?.id || 'ADMIN');
   const accountType = (activeAccount?.type || 'ADMIN').toUpperCase();
   const initials = escapeSafeHtml(
     (activeAccount?.name || activeAccount?.id || 'SA')
@@ -63,7 +63,7 @@ export const renderBaseLayout = ({
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${title} • Zaraz Core Server</title>
+  <title>${title} • Zaraz Admin Panel</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -868,8 +868,8 @@ export const renderBaseLayout = ({
     <a href="/" class="topbar-brand">
       <div class="brand-logo-pill">Z</div>
       <div class="brand-title">
-        <span>Zaraz Server Core</span>
-        <span class="brand-badge">Green & Black Engine</span>
+        <span>Zaraz Admin Panel</span>
+        <span class="brand-badge">Administrator Portal</span>
       </div>
     </a>
 
@@ -903,7 +903,7 @@ export const renderBaseLayout = ({
         <nav class="sidebar-nav">
           <a href="/" class="nav-item ${activeNav === 'dashboard' ? 'active' : ''}">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
-            <span>Servers & Cluster</span>
+            <span>Admin Dashboard</span>
           </a>
 
           <a href="/products" class="nav-item ${activeNav === 'products' ? 'active' : ''}">
@@ -955,7 +955,7 @@ export const renderBaseLayout = ({
             <div class="profile-role" style="display: flex; align-items: center; gap: 0.35rem; margin-top: 0.15rem;">
               <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: ${currentRoleStyle.dot}; box-shadow: 0 0 6px ${currentRoleStyle.dot};"></span>
               <span style="font-weight: 800; font-size: 0.7rem; color: ${currentRoleStyle.color}; letter-spacing: 0.04em;">${accountType}</span>
-              <span style="color: var(--text-muted); font-size: 0.65rem;">• SERVER_ACC</span>
+              <span style="color: var(--text-muted); font-size: 0.65rem;">• Administrator Vault</span>
             </div>
           </div>
         </div>

@@ -90,10 +90,10 @@ app.use(async (req, res, next) => {
 // Resolve SERVER_ACC session cookie and attach AsyncLocalStorage context
 app.use(attachServerSession);
 
-// Isolated Backend Login-Only Routes (SERVER_ACC folder module)
+// Isolated Administrator Login-Only Routes (SERVER_ACC folder module)
 app.use('/', serverAuthRoutes);
 
-// Protect all Backend HTML Dashboard views & admin mutations behind SERVER_ACC login
+// Protect all Admin Panel HTML Dashboard views & admin mutations behind Administrator login
 app.use(protectBackendGateway);
 
 // Direct top-level /jwt endpoint for token issuance (mirrors /auth/jwt)
@@ -148,11 +148,11 @@ app.get('/', async (req, res) => {
                 <div class="service-badge">● Live</div>
               </a>
 
-              <!-- Service 2: Selected Backend Engine -->
+              <!-- Service 2: Admin Panel -->
               <div class="service-card selected">
                 <div>
-                  <div class="service-title">⚡ Zaraz Core API</div>
-                  <div class="service-sub">Express &bull; Node ${process.version} &bull; Port ${PORT}</div>
+                  <div class="service-title">⚡ Zaraz Admin Panel</div>
+                  <div class="service-sub">Administrator Portal &bull; Node ${process.version} &bull; Port ${PORT}</div>
                 </div>
                 <div class="service-badge" style="background: var(--emerald); color: #04170f;">● Active</div>
               </div>
@@ -613,7 +613,7 @@ app.get('/', async (req, res) => {
       `;
 
       return res.status(200).send(renderBaseLayout({
-        title: 'Zaraz API Core Engine',
+        title: 'Zaraz Admin Panel',
         activeNav: 'dashboard',
         content: htmlContent,
         jsonUrl: '/?format=json',
@@ -625,10 +625,10 @@ app.get('/', async (req, res) => {
     if (!req.serverAccount) {
       return res.status(200).json({
         success: true,
-        service: 'Zaraz E-Commerce API Server (Daraz Inspired Green & Black Edition)',
+        service: 'Zaraz E-Commerce Admin Panel (Daraz Inspired Green & Black Edition)',
         version: '1.0.0',
         dashboardProtected: true,
-        serverVault: 'SERVER_ACC.accounts (Login Only)',
+        serverVault: 'Administrator Vault (Login Only)',
         loginUrl: '/login',
       });
     }
@@ -636,8 +636,9 @@ app.get('/', async (req, res) => {
     // Authenticated JSON telemetry response
     res.status(200).json({
       success: true,
-      service: 'Zaraz E-Commerce API Server (Daraz Inspired Green & Black Edition)',
+      service: 'Zaraz E-Commerce Admin Panel (Daraz Inspired Green & Black Edition)',
       version: '1.0.0',
+      administrator: req.serverAccount,
       serverOperator: req.serverAccount,
       database: isMysqlMode() ? {
         engine: 'XAMPP MySQL',
@@ -699,9 +700,9 @@ app.get('/', async (req, res) => {
   } catch (error) {
     res.status(200).json({
       success: false,
-      service: 'Zaraz E-Commerce API Server',
-      status: 'MongoDB Connection Pending',
-      message: 'MongoDB Atlas is connecting. Check cluster connectivity.',
+      service: 'Zaraz E-Commerce Admin Panel',
+      status: 'Database Connection Pending',
+      message: 'Database is connecting. Please check connection status.',
       error: error.message,
     });
   }
@@ -815,13 +816,13 @@ app.use((req, res) => {
 
   res.status(404).json({
     success: false,
-    message: `API route ${req.originalUrl} not found on Zaraz Server.`,
+    message: `API route ${req.originalUrl} not found on Zaraz Admin Panel.`,
   });
 });
 
 // Global Error Handler
 app.use((err, req, res, next) => {
-  console.error('[Server Error]:', err.stack);
+  console.error('[Admin Panel Error]:', err.stack);
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal Server Error',
@@ -830,8 +831,8 @@ app.use((err, req, res, next) => {
 
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
-    console.log(`[Zaraz Server] Running at http://localhost:${PORT}`);
-    console.log(`[Zaraz Server] Health check: http://localhost:${PORT}/health`);
+    console.log(`[Zaraz Admin Panel] Running at http://localhost:${PORT}`);
+    console.log(`[Zaraz Admin Panel] Health check: http://localhost:${PORT}/health`);
   });
 }
 

@@ -26,14 +26,14 @@ router.get(
   getServerMe
 );
 
-// Server Operator Login Audit Logs (Strictly ADMIN clearance enforced in controller)
+// Administrator Login Audit Logs (Strictly ADMIN clearance enforced in controller)
 router.get(
   ['/server-logs', '/server-acc/logs', '/api/server-logs'],
   requireServerAdminSession,
   renderServerLoginLogsPage
 );
 
-// Explicitly block backend registration / sign-up endpoints
+// Explicitly block Admin Panel self-registration / sign-up endpoints
 router.all(
   ['/register', '/signup', '/server-acc/register', '/server-acc/signup'],
   blockServerRegistration
