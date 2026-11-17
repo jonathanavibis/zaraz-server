@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import MysqlProduct from './mysql/productModel.js';
-
-const isMysqlMode = () => (process.env.DB_TYPE || 'mysql').toLowerCase() === 'mysql';
+import { isMysqlMode } from '../config/dbMode.js';
 
 const productSchema = new mongoose.Schema(
   {

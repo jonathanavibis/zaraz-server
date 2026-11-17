@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import MysqlOrder from './mysql/orderModel.js';
-
-const isMysqlMode = () => (process.env.DB_TYPE || 'mysql').toLowerCase() === 'mysql';
+import { isMysqlMode } from '../config/dbMode.js';
 
 const orderSchema = new mongoose.Schema(
   {

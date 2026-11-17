@@ -2,8 +2,7 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import { getAuthDb } from '../config/db.js';
 import MysqlUser from './mysql/userModel.js';
-
-const isMysqlMode = () => (process.env.DB_TYPE || 'mysql').toLowerCase() === 'mysql';
+import { isMysqlMode } from '../config/dbMode.js';
 
 const userSchema = new mongoose.Schema(
   {

@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import MysqlBanner from './mysql/bannerModel.js';
-
-const isMysqlMode = () => (process.env.DB_TYPE || 'mysql').toLowerCase() === 'mysql';
+import { isMysqlMode } from '../config/dbMode.js';
 
 const bannerSchema = new mongoose.Schema(
   {

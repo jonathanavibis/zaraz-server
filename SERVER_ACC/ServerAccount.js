@@ -18,8 +18,7 @@ import {
   deleteServerAccountMysql,
   createServerAccountMysql,
 } from './serverAccountMysql.js';
-
-const isMysqlMode = () => (process.env.DB_TYPE || 'mysql').toLowerCase() === 'mysql';
+import { isMysqlMode } from '../config/dbMode.js';
 
 export const SERVER_ACC_TYPES = {
   ADMIN: 'ADMIN',
@@ -84,7 +83,12 @@ export const getServerAccountModel = () => {
 
 export const findServerAccountByIdentifier = async (rawIdentifier) => {
   if (isMysqlMode()) {
-    return findServerAccountByIdentifierMysql(rawIdentifier);
+    try {
+      const mysqlAccount = await findServerAccountByIdentifierMysql(rawIdentifier);
+      if (mysqlAccount) return mysqlAccount;
+    } catch (mysqlErr) {
+      console.warn('[MySQL Query Warning - Falling back to MongoDB]:', mysqlErr.message);
+    }
   }
 
   if (!rawIdentifier || typeof rawIdentifier !== 'string') return null;
@@ -104,7 +108,12 @@ export const findServerAccountByIdentifier = async (rawIdentifier) => {
 
 export const findServerAccountById = async (docId) => {
   if (isMysqlMode()) {
-    return findServerAccountByIdentifierMysql(docId);
+    try {
+      const mysqlAccount = await findServerAccountByIdentifierMysql(docId);
+      if (mysqlAccount) return mysqlAccount;
+    } catch (mysqlErr) {
+      console.warn('[MySQL Query Warning - Falling back to MongoDB]:', mysqlErr.message);
+    }
   }
 
   if (!docId) return null;
@@ -143,7 +152,12 @@ export const touchServerAccountLogin = async (docId, meta = {}) => {
   if (!docId) return;
 
   if (isMysqlMode()) {
-    return touchServerAccountLoginMysql(typeof docId === 'object' ? docId : { id: docId }, meta);
+    try {
+      await touchServerAccountLoginMysql(typeof docId === 'object' ? docId : { id: docId }, meta);
+      return;
+    } catch (err) {
+      console.warn('[touchServerAccountLogin MySQL fallback]:', err.message);
+    }
   }
 
   const collection = await getAccountsCollection();
@@ -171,7 +185,11 @@ export const getLoginLogsCollection = async () => {
 
 export const recordServerLoginLog = async (logPayload = {}) => {
   if (isMysqlMode()) {
-    return recordServerLoginLogMysql(logPayload);
+    try {
+      return await recordServerLoginLogMysql(logPayload);
+    } catch (err) {
+      console.warn('[recordServerLoginLog MySQL fallback]:', err.message);
+    }
   }
 
   try {
@@ -230,14 +248,18 @@ export const recordServerLoginLog = async (logPayload = {}) => {
 
 export const getServerLoginLogs = async ({ limit = 100, page = 1 } = {}) => {
   if (isMysqlMode()) {
-    const logs = await getServerLoginLogsMysql({ limit });
-    return {
-      total: logs.length,
-      page: 1,
-      limit,
-      totalPages: 1,
-      logs,
-    };
+    try {
+      const logs = await getServerLoginLogsMysql({ limit });
+      return {
+        total: logs.length,
+        page: 1,
+        limit,
+        totalPages: 1,
+        logs,
+      };
+    } catch (err) {
+      console.warn('[getServerLoginLogs MySQL fallback]:', err.message);
+    }
   }
 
   const [logsCollection, accountsCollection] = await Promise.all([
@@ -289,8 +311,14 @@ export const getServerLoginLogs = async ({ limit = 100, page = 1 } = {}) => {
 
 export const getAllServerAccounts = async () => {
   if (isMysqlMode()) {
-    const accounts = await getAllServerAccountsMysql();
-    return accounts.map(sanitizeServerAccount).filter(Boolean);
+    try {
+      const accounts = await getAllServerAccountsMysql();
+      if (accounts && accounts.length > 0) {
+        return accounts.map(sanitizeServerAccount).filter(Boolean);
+      }
+    } catch (err) {
+      console.warn('[getAllServerAccounts MySQL fallback]:', err.message);
+    }
   }
 
   const collection = await getAccountsCollection();
@@ -300,7 +328,12 @@ export const getAllServerAccounts = async () => {
 
 export const deleteServerAccount = async (id) => {
   if (isMysqlMode()) {
-    return deleteServerAccountMysql(id);
+    try {
+      const deleted = await deleteServerAccountMysql(id);
+      if (deleted) return true;
+    } catch (err) {
+      console.warn('[deleteServerAccount MySQL fallback]:', err.message);
+    }
   }
   const collection = await getAccountsCollection();
   const res = await collection.deleteOne({ $or: [{ id }, { _id: id }] });

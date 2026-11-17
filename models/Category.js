@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 import MysqlCategory from './mysql/categoryModel.js';
-
-const isMysqlMode = () => (process.env.DB_TYPE || 'mysql').toLowerCase() === 'mysql';
+import { isMysqlMode } from '../config/dbMode.js';
 
 const categorySchema = new mongoose.Schema(
   {

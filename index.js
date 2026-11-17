@@ -25,7 +25,7 @@ import User from './models/User.js';
 
 dotenv.config();
 
-const isMysqlMode = () => (process.env.DB_TYPE || 'mysql').toLowerCase() === 'mysql';
+import { isMysqlMode } from './config/dbMode.js';
 
 // Attempt immediate connection for local servers and initialize database vault
 if (isMysqlMode()) {
@@ -34,7 +34,7 @@ if (isMysqlMode()) {
       if (res.connected) {
         console.log(`[XAMPP MySQL Connected]: ${res.host}:${res.port}/${res.database}`);
       } else {
-        console.error(`[XAMPP MySQL Warning]: ${res.error}`);
+        console.warn(`[XAMPP MySQL Warning]: ${res.error}`);
       }
     });
   });
